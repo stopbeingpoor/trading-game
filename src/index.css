@@ -1,0 +1,1002 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pixel-bg: #0a0a0a;
+  --pixel-bg-light: #151515;
+  --pixel-primary: #00ff00;
+  --pixel-secondary: #ff3333;
+  --pixel-accent: #00ffff;
+  --pixel-text: #00ff00;
+  --pixel-border: #00ff00;
+  --pixel-yellow: #ffff00;
+  --pixel-cyan: #00ffff;
+  --pixel-magenta: #ff00ff;
+  --pixel-orange: #ff9900;
+  --pixel-blue: #3a86ff;
+  --pixel-purple: #800080;
+  --pixel-pink: #ff69b4;
+  --pixel-light-green: #32cd32;
+  --pixel-dark-blue: #00008b;
+  --pixel-light-blue: #add8e6;
+  --pixel-light-yellow: #ffffe0;
+  --pixel-light-pink: #ffb6c1;
+  --pixel-light-purple: #dda0dd;
+  --pixel-light-orange: #ffcc99;
+  
+  color-scheme: dark;
+  color: var(--pixel-text);
+  background-color: var(--pixel-bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: pixelated;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+body {
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--pixel-bg);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Ensure chart container fills available space */
+.flex-1 {
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+/* Pixel art styling */
+.pixel-border {
+  position: relative;
+  padding: 4px;
+}
+
+.pixel-border::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background-color: transparent;
+  border: 2px solid var(--pixel-border);
+  z-index: -1;
+}
+
+.pixel-container {
+  border: 2px solid var(--pixel-border);
+  border-radius: 0px;
+  padding: 10px;
+  background-color: rgba(10, 10, 10, 0.9);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+  image-rendering: pixelated;
+  background-image: linear-gradient(45deg, var(--pixel-bg-light) 25%, transparent 25%, transparent 75%, var(--pixel-bg-light) 75%, var(--pixel-bg-light)), linear-gradient(45deg, var(--pixel-bg-light) 25%, transparent 25%, transparent 75%, var(--pixel-bg-light) 75%, var(--pixel-bg-light));
+  background-size: 8px 8px;
+}
+
+.pixel-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--pixel-border), transparent);
+}
+
+.pixel-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-right: 2px solid var(--pixel-border);
+  border-bottom: 2px solid var(--pixel-border);
+}
+
+.pixel-header {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 24px;
+  letter-spacing: 2px;
+  color: #00ff00;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+  margin-bottom: 1rem;
+}
+
+.pixel-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  color: var(--pixel-text);
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+  background-color: var(--pixel-bg-light);
+  padding: 2px;
+  border: 1px solid var(--pixel-border);
+}
+
+.pixel-button {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  padding: 10px 15px;
+  background-color: var(--pixel-bg);
+  color: var(--pixel-primary);
+  border: 2px solid var(--pixel-primary);
+  cursor: pointer;
+  transition: all 0.1s;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  margin: 5px;
+  min-width: 100px;
+  background-image: linear-gradient(45deg, var(--pixel-bg-light) 25%, transparent 25%, transparent 75%, var(--pixel-bg-light) 75%, var(--pixel-bg-light)), linear-gradient(45deg, var(--pixel-bg-light) 25%, transparent 25%, transparent 75%, var(--pixel-bg-light) 75%, var(--pixel-bg-light));
+  background-size: 8px 8px;
+}
+
+.pixel-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+}
+
+.pixel-button:hover {
+  background-color: rgba(0, 255, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  background-image: linear-gradient(45deg, var(--pixel-light-green) 25%, transparent 25%, transparent 75%, var(--pixel-light-green) 75%, var(--pixel-light-green)), linear-gradient(45deg, var(--pixel-light-green) 25%, transparent 25%, transparent 75%, var(--pixel-light-green) 75%, var(--pixel-light-green));
+}
+
+.pixel-button:active:not(:disabled) {
+  transform: scale(0.98);
+  background-color: rgba(0, 255, 0, 0.3);
+}
+
+.pixel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buy-button {
+  color: var(--pixel-light-green);
+  border-color: var(--pixel-light-green);
+  background-color: rgba(50, 205, 50, 0.2);
+}
+
+.sell-button {
+  color: var(--pixel-light-pink);
+  border-color: var(--pixel-light-pink);
+  background-color: rgba(255, 182, 193, 0.2);
+}
+
+.close-button {
+  color: var(--pixel-light-blue);
+  border-color: var(--pixel-light-blue);
+  background-color: rgba(173, 216, 230, 0.2);
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pixel-bg);
+  border: 1px solid var(--pixel-border);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pixel-border);
+  border: 1px solid var(--pixel-text);
+  image-rendering: pixelated;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pixel-accent);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .pixel-header {
+    font-size: 0.9rem;
+  }
+  
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .desktop-only {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+  
+  .tablet-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@media (min-width: 1025px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Pixel art animations */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pixel-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.pixel-blink {
+  animation: blink 1s infinite;
+}
+
+/* Range input styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 8px;
+  background: var(--pixel-bg);
+  border: 2px solid var(--pixel-text);
+  box-shadow: inset 0 0 0 2px #000;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--pixel-accent);
+  border: 2px solid #000;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--pixel-accent);
+  border: 2px solid #000;
+  cursor: pointer;
+}
+
+/* Progress bar styling */
+.pixel-progress {
+  height: 8px;
+  background: var(--pixel-bg);
+  border: 2px solid var(--pixel-primary);
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.pixel-progress-bar {
+  height: 100%;
+  transition: width 0.3s;
+  background-color: var(--pixel-primary);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
+
+/* Table styling */
+.pixel-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: var(--pixel-text);
+  margin: 10px 0;
+  border: 2px solid var(--pixel-primary);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.pixel-table th {
+  background-color: var(--pixel-purple);
+  color: var(--pixel-bg);
+  padding: 12px;
+  text-transform: uppercase;
+  font-size: 18px;
+  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.pixel-table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+}
+
+.pixel-table td {
+  padding: 10px;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  text-align: center;
+  background-color: var(--pixel-bg-light);
+  font-size: 16px;
+}
+
+.pixel-table tr:nth-child(even) {
+  background-color: rgba(0, 255, 0, 0.05);
+}
+
+.pixel-table tr:hover {
+  background-color: rgba(0, 255, 255, 0.1);
+}
+
+.pixel-table .positive {
+  color: var(--pixel-light-green);
+  text-shadow: 0 0 5px rgba(50, 205, 50, 0.5);
+}
+
+.pixel-table .negative {
+  color: var(--pixel-light-pink);
+  text-shadow: 0 0 5px rgba(255, 182, 193, 0.5);
+}
+
+.pixel-table .neutral {
+  color: var(--pixel-light-blue);
+  text-shadow: 0 0 5px rgba(173, 216, 230, 0.5);
+}
+
+/* Candlestick colors */
+.candle-up {
+  fill: #00ff00; /* Bright green */
+  stroke: #00ff00;
+  stroke-width: 0.5px;
+}
+
+.candle-down {
+  fill: #ff3333; /* Bright red */
+  stroke: #ff3333;
+  stroke-width: 0.5px;
+}
+
+/* Chart container styling */
+.chart-container {
+  background-color: #000;
+  border: 2px solid var(--pixel-border);
+  padding: 16px;
+  margin-top: 15px;
+  image-rendering: pixelated;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--pixel-border), transparent);
+}
+
+/* Chart text styling */
+.chart-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  fill: var(--pixel-text);
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.level-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+}
+
+.trading-info {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.settings-value {
+  font-size: 16px;
+}
+
+.status-text {
+  font-size: 16px;
+}
+
+/* Increase the base font size for all small text */
+.text-xs {
+  font-size: 16px !important;
+}
+
+.text-sm {
+  font-size: 18px !important;
+}
+
+/* Make price labels more visible */
+.price-label {
+  font-size: 14px;
+  font-family: 'Press Start 2P', monospace;
+  color: var(--pixel-text);
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+/* Ensure trade history text is readable */
+.trade-history-text {
+  font-size: 16px;
+  color: var(--pixel-text);
+}
+
+/* Make slider values more visible */
+.slider-value {
+  font-size: 16px;
+  color: var(--pixel-text);
+}
+
+/* Update mobile responsive text sizes */
+@media (max-width: 768px) {
+  .chart-text {
+    font-size: 12px;
+  }
+  
+  .text-xs {
+    font-size: 14px !important;
+  }
+  
+  .text-sm {
+    font-size: 16px !important;
+  }
+  
+  .level-text {
+    font-size: 12px;
+  }
+  
+  .trading-info {
+    font-size: 12px;
+  }
+  
+  .status-label {
+    font-size: 10px;
+  }
+}
+
+.brain-icon {
+  font-size: 0.9rem;
+  filter: drop-shadow(0 0 3px rgba(0, 255, 0, 0.6));
+  margin-right: 0.25rem;
+  animation: pulse 2s infinite;
+}
+
+.brain-icon:hover {
+  transform: scale(1.1);
+}
+
+.status-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+.retro-progress {
+  display: none;
+}
+
+.retro-progress-bar {
+  display: none;
+}
+
+.trader-status-box {
+  background-color: #000;
+  border: 2px solid var(--pixel-border);
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+  padding: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.trader-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
+  margin-bottom: 0.25rem;
+}
+
+.trader-level {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #ffcc00;
+  text-shadow: 0 0 5px rgba(255, 204, 0, 0.7);
+  margin-bottom: 0.5rem;
+}
+
+.sanity-bar {
+  width: 100%;
+  height: 24px;
+  background: #000;
+  border: 2px solid #00ff00;
+  padding: 3px;
+  display: flex;
+  gap: 3px;
+  margin-top: 0.5rem;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.sanity-segment {
+  flex: 1;
+  height: 100%;
+  background: #111;
+  transition: all 0.3s ease;
+  position: relative;
+  border: 1px solid #333;
+}
+
+.sanity-segment.filled {
+  background: #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+  border-color: #00ff00;
+}
+
+.sanity-segment.filled::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.sanity-segment.warning {
+  background: #ffcc00;
+  box-shadow: 0 0 8px rgba(255, 204, 0, 0.8);
+  border-color: #ffcc00;
+}
+
+.sanity-segment.warning::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.sanity-segment.danger {
+  background: #ff3333;
+  box-shadow: 0 0 8px rgba(255, 51, 51, 0.8);
+  border-color: #ff3333;
+}
+
+.sanity-segment.danger::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.sanity-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+}
+
+.timer-display {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #ff3333;
+  background: rgba(255, 51, 51, 0.1);
+  border: 1px solid #ff3333;
+  padding: 0.5rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.total-pnl {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #888;
+  text-align: right;
+  margin-right: 1rem;
+}
+
+.emoji-container {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #000;
+  border: 2px solid var(--pixel-border);
+  font-size: 32px;
+}
+
+.trader-box {
+  background: #000;
+  border: 2px solid #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  padding: 0.75rem;
+  border-radius: 2px;
+  min-width: 200px;
+}
+
+.trader-emoji {
+  font-size: 1.5rem;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  padding: 0.4rem;
+  border-radius: 2px;
+  height: fit-content;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.2);
+}
+
+.trader-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 12px;
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.05em;
+}
+
+.trader-level {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #ffcc00;
+  text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+.sanity-container {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  background: rgba(0, 255, 0, 0.05);
+  padding: 0.5rem;
+  border: 1px solid rgba(0, 255, 0, 0.2);
+  border-radius: 2px;
+  margin-top: 0.25rem;
+}
+
+.sanity-text {
+  color: #00ff00;
+  margin-right: 0.25rem;
+  text-shadow: 0 0 3px rgba(0, 255, 0, 0.4);
+}
+
+.sanity-value {
+  font-weight: bold;
+  font-size: 10px;
+  text-shadow: 0 0 3px currentColor;
+}
+
+.sanity-bar {
+  width: 100%;
+  height: 8px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 2px;
+  margin-top: 0.4rem;
+  overflow: hidden;
+  display: flex;
+  gap: 2px;
+  padding: 1px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.sanity-segment {
+  flex: 1;
+  height: 100%;
+  background: #222;
+  transition: all 0.2s ease;
+  position: relative;
+  border: 1px solid #333;
+}
+
+.sanity-segment.filled {
+  background: linear-gradient(180deg, #00ff00, #00cc00);
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  border-color: #00ff00;
+}
+
+.sanity-segment.warning {
+  background: linear-gradient(180deg, #ffcc00, #cc9900);
+  box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+  border-color: #ffcc00;
+}
+
+.sanity-segment.danger {
+  background: linear-gradient(180deg, #ff3333, #cc0000);
+  box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
+  border-color: #ff3333;
+}
+
+@media (max-width: 640px) {
+  .trader-box {
+    padding: 0.5rem;
+    min-width: auto;
+  }
+  
+  .trader-title {
+    font-size: 10px;
+  }
+  
+  .trader-level {
+    font-size: 8px;
+  }
+  
+  .sanity-container {
+    font-size: 8px;
+    padding: 0.4rem;
+  }
+  
+  .sanity-value {
+    font-size: 8px;
+  }
+  
+  .sanity-bar {
+    height: 6px;
+  }
+  
+  .brain-icon {
+    font-size: 0.8rem;
+  }
+}
+
+/* ECG Animation */
+@keyframes ecgAnimation {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes ecgPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.heart-rate-monitor {
+  position: relative;
+  width: 100%;
+  height: 40px;
+  background: #000;
+  border: 1px solid #00ff00;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.heart-rate-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 1;
+}
+
+.ecg-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 200%;
+  height: 40px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    transparent 48%, 
+    #00ff00 48%,
+    #00ff00 48.5%,
+    transparent 48.5%,
+    transparent 49%,
+    #00ff00 49%,
+    #00ff00 49.2%,
+    transparent 49.2%,
+    transparent 49.4%,
+    #00ff00 49.4%,
+    #00ff00 49.6%,
+    transparent 49.6%,
+    transparent 49.8%,
+    #00ff00 49.8%,
+    #00ff00 50%,
+    transparent 50%,
+    transparent 50.2%,
+    #00ff00 50.2%,
+    #00ff00 51%,
+    transparent 51%,
+    transparent 100%
+  );
+  animation: ecgAnimation 4s linear infinite;
+  z-index: 2;
+}
+
+.heart-rate-value {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #00ff00;
+  text-shadow: 0 0 4px rgba(0, 255, 0, 0.8);
+  z-index: 3;
+  padding: 2px 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(0, 255, 0, 0.3);
+  animation: ecgPulse 1s ease-in-out infinite;
+}
+
+.heart-icon {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 10px;
+  color: #ff3333;
+  text-shadow: 0 0 4px rgba(255, 51, 51, 0.8);
+  z-index: 3;
+  animation: ecgPulse 1s ease-in-out infinite;
+}
+
+/* Update the speed of the ECG animation based on heart rate */
+.heart-rate-monitor[data-rate="high"] .ecg-line {
+  animation-duration: 2s;
+}
+
+.heart-rate-monitor[data-rate="low"] .ecg-line {
+  animation-duration: 6s;
+}
+
+/* Danger state */
+.heart-rate-monitor[data-state="danger"] {
+  border-color: #ff3333;
+}
+
+.heart-rate-monitor[data-state="danger"] .ecg-line {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    transparent 48%, 
+    #ff3333 48%,
+    #ff3333 48.5%,
+    transparent 48.5%,
+    transparent 49%,
+    #ff3333 49%,
+    #ff3333 49.2%,
+    transparent 49.2%,
+    transparent 49.4%,
+    #ff3333 49.4%,
+    #ff3333 49.6%,
+    transparent 49.6%,
+    transparent 49.8%,
+    #ff3333 49.8%,
+    #ff3333 50%,
+    transparent 50%,
+    transparent 50.2%,
+    #ff3333 50.2%,
+    #ff3333 51%,
+    transparent 51%,
+    transparent 100%
+  );
+}
+
+.heart-rate-monitor[data-state="danger"] .heart-rate-value {
+  color: #ff3333;
+  text-shadow: 0 0 4px rgba(255, 51, 51, 0.8);
+  border-color: rgba(255, 51, 51, 0.3);
+}
+
+.heart-rate-monitor[data-state="danger"] .heart-rate-grid {
+  background-image: 
+    linear-gradient(90deg, rgba(255, 51, 51, 0.1) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 51, 51, 0.1) 1px, transparent 1px);
+}
+
+/* Warning state */
+.heart-rate-monitor[data-state="warning"] {
+  border-color: #ffcc00;
+}
+
+.heart-rate-monitor[data-state="warning"] .ecg-line {
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    transparent 48%, 
+    #ffcc00 48%,
+    #ffcc00 48.5%,
+    transparent 48.5%,
+    transparent 49%,
+    #ffcc00 49%,
+    #ffcc00 49.2%,
+    transparent 49.2%,
+    transparent 49.4%,
+    #ffcc00 49.4%,
+    #ffcc00 49.6%,
+    transparent 49.6%,
+    transparent 49.8%,
+    #ffcc00 49.8%,
+    #ffcc00 50%,
+    transparent 50%,
+    transparent 50.2%,
+    #ffcc00 50.2%,
+    #ffcc00 51%,
+    transparent 51%,
+    transparent 100%
+  );
+}
+
+.heart-rate-monitor[data-state="warning"] .heart-rate-value {
+  color: #ffcc00;
+  text-shadow: 0 0 4px rgba(255, 204, 0, 0.8);
+  border-color: rgba(255, 204, 0, 0.3);
+}
+
+.heart-rate-monitor[data-state="warning"] .heart-rate-grid {
+  background-image: 
+    linear-gradient(90deg, rgba(255, 204, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 204, 0, 0.1) 1px, transparent 1px);
+}
