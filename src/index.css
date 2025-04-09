@@ -645,7 +645,7 @@ input[type="range"]::-moz-range-thumb {
   text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
 }
 
-.timer-display {
+/* .timer-display {
   font-family: 'Press Start 2P', monospace;
   font-size: 12px;
   color: #ff3333;
@@ -655,7 +655,7 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 4px;
   display: flex;
   align-items: center;
-}
+} */
 
 .total-pnl {
   font-family: 'Press Start 2P', monospace;

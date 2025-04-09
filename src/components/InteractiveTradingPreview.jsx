@@ -311,6 +311,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(null);
   const [followingLatest, setFollowingLatest] = useState(true);
+  const followingLatestRef = useRef(followingLatest); // Ref to track current value
   const [lastKnownRange, setLastKnownRange] = useState({ start: 0, end: 15 });
   const [liquidationPrice, setLiquidationPrice] = useState(null);
   const [isGameOver, setIsGameOver] = useState(false);
@@ -511,20 +512,14 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       // Keep up to 100 candles in history
       const updatedData = [...data.slice(-99), newCandle];
       
-      // Update visible range based on following state
+      // Update visible range only if following the latest candle
       if (followingLatest) {
         setVisibleRange({
           start: Math.max(0, updatedData.length - 15),
           end: updatedData.length
         });
-      } else {
-        // When not following latest, maintain the same candles in view
-        const distanceFromEnd = data.length - visibleRange.end;
-        setVisibleRange({
-          start: Math.max(0, updatedData.length - distanceFromEnd - 15),
-          end: updatedData.length - distanceFromEnd
-        });
       }
+      // If not following latest, do nothing here - let user interaction control the range
       
       return updatedData;
     });
@@ -836,7 +831,19 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     
     // Immediate emotional response to taking a position
     setHeartRate(prev => Math.min(200, prev + 15));
-    setSanity(s => Math.round(Math.max(0, s - (leverage > 50 ? 0.5 : 0.2)) * 10) / 10);
+    // Sanity decline based on trading type and game over check
+    let decrement = 0;
+    if (selectedCharacter.name === 'Stoic') decrement = 0.5;
+    else if (selectedCharacter.name === 'Nervous Newbie') decrement = 1;
+    else if (selectedCharacter.name === 'Full Degen') decrement = 1.5;
+
+    setSanity(prevSanity => {
+      const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
+      if (newSanity <= 0) {
+        setIsGameOver(true); // Trigger game over if sanity reaches zero
+      }
+      return newSanity;
+    });
     
     // Brief emotional response
     setEmotion('excited');
@@ -867,7 +874,19 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     
     // Immediate emotional response to taking a position
     setHeartRate(prev => Math.min(200, prev + 15));
-    setSanity(s => Math.round(Math.max(0, s - (leverage > 50 ? 0.5 : 0.2)) * 10) / 10);
+    // Sanity decline based on trading type and game over check
+    let decrement = 0;
+    if (selectedCharacter.name === 'Stoic') decrement = 0.5;
+    else if (selectedCharacter.name === 'Nervous Newbie') decrement = 1;
+    else if (selectedCharacter.name === 'Full Degen') decrement = 1.5;
+
+    setSanity(prevSanity => {
+      const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
+      if (newSanity <= 0) {
+        setIsGameOver(true); // Trigger game over if sanity reaches zero
+      }
+      return newSanity;
+    });
     
     // Brief emotional response
     setEmotion('excited');
@@ -1038,6 +1057,11 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       }
     };
   }, []);
+
+  // Keep the ref updated with the latest state value
+  useEffect(() => {
+    followingLatestRef.current = followingLatest;
+  }, [followingLatest]);
   
   // Add reset game function
   const resetGame = () => {
