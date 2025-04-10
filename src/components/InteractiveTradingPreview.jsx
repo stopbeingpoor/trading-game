@@ -299,7 +299,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   const [tradeHistory, setTradeHistory] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 15 });
-  const [currentPrice, setCurrentPrice] = useState(10000);
+  const [currentPrice, setCurrentPrice] = useState(5000); // Start price in points
   const [timeElapsed, setTimeElapsed] = useState(0);
   const [sanity, setSanity] = useState(8);
   const [heartRate, setHeartRate] = useState(80);
@@ -381,10 +381,10 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   // Generate initial chart data
   const generateInitialData = () => {
     const data = [];
-    let price = 10000;
-    let momentum = 0;
-    let volatility = 0.02;
-    let trendStrength = 0;
+    let price = 5000; // Starting price in points
+    let momentum = 0; // Still -1 to 1
+    let volatility = 20; // Initial volatility in points (e.g., ATR equivalent)
+    let trendStrength = 0; // Still 0 to 1
     
     // Generate 100 candles for historical data
     for (let i = 0; i < 100; i++) {
@@ -395,7 +395,8 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       momentum = momentum * 0.95 + (Math.random() - 0.5) * 0.1;
       
       // Dynamic volatility based on recent trend strength
-      volatility = 0.015 + (trendStrength * 0.015);
+      // Dynamic volatility based on recent trend strength - now in points
+      volatility = 15 + (trendStrength * 15); // Base 15 points + trend influence
       
       // 3% chance of a market crash or pump
       const isExtremeMove = Math.random() < 0.03;
@@ -404,19 +405,31 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         momentum = (Math.random() < 0.7 ? -1 : 1) * Math.random(); // Strong directional bias
       }
       
-      // Calculate price change with momentum influence
-      const trendBias = momentum * volatility;
-      const randomComponent = (Math.random() * 2 - 1) * volatility;
-      const change = trendBias + randomComponent;
-      
+      // Calculate price change in points
+      const trendBias = momentum * volatility * 0.5; // Momentum effect in points
+      const randomComponent = (Math.random() * 2 - 1) * volatility; // Random fluctuation in points
+      const change = trendBias + randomComponent; // Total change in points
+
       const open = price;
-      price = open * (1 + change);
+      let potentialPrice = open + change; // Calculate potential next price
+
+      const reversionThreshold = 9500;
+      const reversionStrength = 0.1; // Adjust this factor to control how strongly it reverts
+
+      if (potentialPrice > reversionThreshold) {
+        const overshoot = potentialPrice - reversionThreshold;
+        const reversionAdjustment = overshoot * reversionStrength;
+        potentialPrice -= reversionAdjustment; // Apply downward pressure
+      }
+
+      // Remove the 9999 clamp, keep the 0 clamp
+      price = Math.max(0, potentialPrice);
       
       // Generate more natural wicks
-      const bodySize = Math.abs(price - open);
-      const wickMultiplier = 1 + (Math.random() * trendStrength);
-      const upperWickSize = bodySize * wickMultiplier * (Math.random() * 0.8 + 0.2);
-      const lowerWickSize = bodySize * wickMultiplier * (Math.random() * 0.8 + 0.2);
+      // Generate wicks based on volatility (absolute points)
+      const wickVolatility = volatility * 0.75; // Wicks are related to volatility
+      const upperWickSize = Math.random() * wickVolatility;
+      const lowerWickSize = Math.random() * wickVolatility;
       
       const high = Math.max(open, price) + upperWickSize;
       const low = Math.min(open, price) - lowerWickSize;
@@ -430,23 +443,78 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         volume: Math.floor(Math.random() * 1000) * (1 + trendStrength * 2)
       });
       
-      // Update trend strength based on price movement
-      if (Math.abs(change) > volatility * 1.5) {
+      // Update trend strength based on relative price movement compared to volatility
+      if (Math.abs(change) > volatility * 0.8) { // If change was significant relative to volatility
         trendStrength = Math.min(1, trendStrength + 0.1);
       } else {
-        trendStrength *= 0.95;
+        trendStrength *= 0.95; // Decay trend strength otherwise
       }
     }
     
     return data;
   };
   
-  // Helper function to calculate standard deviation
-  const calculateStdDev = (values) => {
-    const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-    const squareDiffs = values.map(value => Math.pow(value - mean, 2));
-    const avgSquareDiff = squareDiffs.reduce((sum, val) => sum + val, 0) / squareDiffs.length;
-    return Math.sqrt(avgSquareDiff);
+  // Helper function to calculate True Range
+  const calculateTrueRange = (candle, prevCandle) => {
+    if (!prevCandle) return candle.high - candle.low; // Handle first candle
+    const highLow = candle.high - candle.low;
+    const highPrevClose = Math.abs(candle.high - prevCandle.close);
+    const lowPrevClose = Math.abs(candle.low - prevCandle.close);
+    return Math.max(highLow, highPrevClose, lowPrevClose);
+  };
+
+  // Helper function to calculate Average True Range (ATR)
+  const calculateATR = (data, period = 14) => {
+    if (data.length < period) return null; // Not enough data
+
+    let trSum = 0;
+    const trueRanges = [];
+
+    // Calculate initial True Ranges and sum for the first ATR
+    // We need data going back period + 1 candles to calculate TR for the first candle in the period
+    const startIndex = Math.max(0, data.length - period -1);
+    for (let i = startIndex + 1; i < data.length; i++) {
+       const candle = data[i];
+       const prevCandle = data[i - 1]; // Should always exist given startIndex logic
+       const tr = calculateTrueRange(candle, prevCandle);
+       trueRanges.push(tr);
+    }
+
+    // Calculate the first ATR (simple average of first 'period' TRs)
+    // Ensure we have enough true ranges calculated
+    if (trueRanges.length < period) return null;
+    trSum = trueRanges.slice(-period).reduce((sum, val) => sum + val, 0);
+    let atr = trSum / period;
+
+    // Note: For a more accurate ATR in a live scenario, you'd typically smooth it
+    // over the entire history. For this simulation, calculating based on the
+    // last 'period' candles on each update is a reasonable approximation.
+    // A more robust implementation would store previous ATR values.
+    return atr;
+  };
+
+  // Helper function to find Support and Resistance levels
+  const findSupportResistance = (data, lookbackPeriod = 50) => {
+    if (data.length < lookbackPeriod) {
+      // Not enough data, return wide defaults or null
+      return { support: null, resistance: null };
+    }
+
+    const relevantData = data.slice(-lookbackPeriod);
+    let lowestLow = Infinity;
+    let highestHigh = -Infinity;
+
+    relevantData.forEach(candle => {
+      lowestLow = Math.min(lowestLow, candle.low);
+      highestHigh = Math.max(highestHigh, candle.high);
+    });
+
+     // Avoid returning Infinity if data was somehow invalid
+    if (lowestLow === Infinity || highestHigh === -Infinity) {
+        return { support: null, resistance: null };
+    }
+
+    return { support: lowestLow, resistance: highestHigh };
   };
 
   // Update chart with new data
@@ -457,7 +525,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       const lastCandle = data[data.length - 1];
       const open = lastCandle.close;
       
-      // Get recent price movement
+      // Get recent price movement (still using relative for momentum calculation)
       const recentCandles = data.slice(-5);
       const priceChanges = recentCandles.map((c, i) => 
         i > 0 ? (c.close - recentCandles[i-1].close) / recentCandles[i-1].close : 0
@@ -466,10 +534,12 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       // Calculate momentum from recent moves
       const momentum = priceChanges.reduce((sum, change) => sum + change, 0) / priceChanges.length;
       
-      // Dynamic volatility based on recent price action
-      const baseVolatility = 0.015;
-      const recentVolatility = calculateStdDev(priceChanges) || baseVolatility;
-      let volatility = (baseVolatility + recentVolatility) / 2;
+      // Calculate ATR for volatility
+      const atrPeriod = 14;
+      const currentATR = calculateATR(data, atrPeriod);
+      
+      // Use ATR directly as volatility in points, fallback if not available
+      let volatility = currentATR ?? 20; // Use calculated ATR in points, or default 20 points
       
       // 3% chance of extreme move
       const isExtremeMove = Math.random() < 0.03;
@@ -477,22 +547,57 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         volatility *= 4;
         // Bias towards continuing recent trend during extreme moves
         if (momentum !== 0) {
-          volatility *= Math.sign(momentum);
+           // Apply bias directionally, but keep volatility positive for magnitude calculation
+           volatility = Math.abs(volatility); // Ensure volatility is positive
+           // We'll use momentum sign later in trendBias
         }
       }
       
-      // Calculate price change with momentum influence
-      const trendBias = momentum * volatility * 2;
-      const randomComponent = (Math.random() * 2 - 1) * volatility;
-      const change = trendBias + randomComponent;
+      // --- Support & Resistance Logic ---
+      const srLookback = 50;
+      const { support, resistance } = findSupportResistance(data, srLookback);
+      let srInfluence = 0; // Factor to adjust the change based on S/R proximity (in points)
+      const proximityThreshold = volatility * 0.5; // How close (in points) to S/R to trigger influence
+
+      if (resistance && open > resistance - proximityThreshold) {
+        // Near resistance: Increase downward pressure
+        const distanceFactor = Math.max(0, 1 - (resistance - open) / proximityThreshold); // 0 far, 1 at level
+        srInfluence = -volatility * distanceFactor * (0.5 + Math.random() * 0.5); // Random downward push in points
+        console.log(`Near Resistance (${resistance.toFixed(1)}). Influence: ${srInfluence.toFixed(4)}`);
+      } else if (support && open < support + proximityThreshold) {
+        // Near support: Increase upward pressure
+        const distanceFactor = Math.max(0, 1 - (open - support) / proximityThreshold); // 0 far, 1 at level
+        srInfluence = volatility * distanceFactor * (0.5 + Math.random() * 0.5); // Random upward push in points
+        console.log(`Near Support (${support.toFixed(1)}). Influence: ${srInfluence.toFixed(4)}`);
+      }
+      // --- End S/R Logic ---
+
+
+      // Calculate price change in points with momentum and S/R influence
+      const trendBias = momentum * volatility * 0.5; // Momentum effect in points (adjust multiplier as needed)
+      const randomComponent = (Math.random() * 2 - 1) * volatility; // Random fluctuation in points
+      let change = trendBias + randomComponent + srInfluence; // Total change in points
+
+      // Ensure change isn't excessively large compared to volatility (sanity check)
+      change = Math.max(-volatility * 3, Math.min(volatility * 3, change));
+
+      let potentialClose = open + change; // Calculate potential close price
+
+      const reversionThreshold = 9500; // Using the same threshold and strength
+      const reversionStrength = 0.1;
+
+      if (potentialClose > reversionThreshold) {
+        const overshoot = potentialClose - reversionThreshold;
+        const reversionAdjustment = overshoot * reversionStrength;
+        potentialClose -= reversionAdjustment; // Apply downward pressure
+      }
+
+      const close = Math.max(0, potentialClose); // Remove 9999 clamp, keep 0 clamp
       
-      const close = open * (1 + change);
-      
-      // Generate natural wicks based on volatility and momentum
-      const bodySize = Math.abs(close - open);
-      const wickMultiplier = 1 + (Math.abs(momentum) * 2);
-      const upperWickSize = bodySize * wickMultiplier * (Math.random() * 0.8 + 0.2);
-      const lowerWickSize = bodySize * wickMultiplier * (Math.random() * 0.8 + 0.2);
+      // Generate natural wicks based on volatility (absolute points)
+      const wickVolatility = volatility * 0.75; // Wicks are related to volatility
+      const upperWickSize = Math.random() * wickVolatility;
+      const lowerWickSize = Math.random() * wickVolatility;
       
       const high = Math.max(open, close) + upperWickSize;
       const low = Math.min(open, close) - lowerWickSize;
@@ -500,8 +605,8 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       const newCandle = {
         time: Date.now(),
         open,
-        high,
-        low,
+        high: high, // Remove 9999 clamp
+        low: Math.max(0, low),     // Clamp low
         close,
         volume: Math.floor(Math.random() * 1000) * (1 + Math.abs(momentum) * 2)
       };
@@ -525,103 +630,128 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     });
   };
   
-  // Calculate liquidation price when position is opened
-  const calculateLiquidationPrice = (type, entry, size, leverageUsed) => {
-    // The entire position size (wallet balance) is the margin
-    // Liquidation occurs when losses equal the full wallet balance
-    if (type === 'buy') {
-      return entry * (1 - (1 / leverageUsed));
-    } else {
-      return entry * (1 + (1 / leverageUsed));
+  // Calculate liquidation price based on points and $10/point PNL
+  const calculateLiquidationPrice = (type, entry, initialMargin, leverageUsed) => {
+    // Ensure initialMargin is positive and leverage is valid
+    if (initialMargin <= 0 || leverageUsed <= 0) {
+        console.error("Cannot calculate liquidation price with zero or negative margin/leverage.", { initialMargin, leverageUsed });
+        return null;
     }
+
+    const pnlPerPoint = 10;
+    // Liquidation occurs when loss = initialMargin
+    // Loss = abs(pointDifference) * pnlPerPoint * leverageUsed
+    // initialMargin = abs(pointDifference) * pnlPerPoint * leverageUsed
+    // abs(pointDifference) = initialMargin / (pnlPerPoint * leverageUsed)
+    const maxLossPoints = initialMargin / (pnlPerPoint * leverageUsed);
+
+    let liqPrice;
+    if (type === 'buy') {
+      // Price needs to drop by maxLossPoints from entry
+      liqPrice = entry - maxLossPoints;
+    } else { // type === 'sell'
+      // Price needs to rise by maxLossPoints from entry
+      liqPrice = entry + maxLossPoints;
+    }
+    // Clamp liquidation price within the 0-9999 range
+    return Math.max(0, liqPrice); // Remove 9999 clamp
   };
 
   // Update PNL calculation and trader state
   const updatePnl = () => {
     if (!position || !entryPrice) return;
-    
+
     const latestPrice = chartData[chartData.length - 1]?.close || currentPrice;
-    const priceDiff = (latestPrice - entryPrice) / entryPrice;
-    
-    // Get initial wallet balance (the position size at entry)
-    const initialWalletBalance = walletBalance - pnl; // Remove current PNL to get initial balance
-    
+    const pointDifference = latestPrice - entryPrice;
+    const pnlPerPoint = 10; // $10 PNL per point change
+
+    // Get initial wallet balance (the margin used for the trade)
+    // Since the whole wallet is used as margin, this is the balance *at the time of entry*
+    const initialWalletBalance = walletBalance - pnl; // Back-calculate initial balance
+
     let newPnl;
     if (position === 'buy') {
-      newPnl = initialWalletBalance * priceDiff * leverage;
-    } else {
-      newPnl = initialWalletBalance * -priceDiff * leverage;
+      // PNL = (Points Gained) * $10 * Leverage
+      newPnl = pointDifference * pnlPerPoint * leverage;
+    } else { // position === 'sell'
+      // PNL = -(Points Lost) * $10 * Leverage
+      newPnl = -pointDifference * pnlPerPoint * leverage;
     }
-    
+
     setPnl(newPnl);
 
     // Update wallet balance in real-time based on current PNL
     setWalletBalance(initialWalletBalance + newPnl);
 
-    // Check for liquidation - entire wallet balance is the margin
-    // Only liquidate when PnL is negative and losses exceed the initial wallet balance
-    console.log("PnL Check:", {
-      newPnl,
-      initialWalletBalance,
+    // Check for liquidation - Liquidation occurs when negative PNL equals the initial margin
+    console.log("PnL Check (Points):", {
+      newPnl: newPnl.toFixed(2),
+      initialWalletBalance: initialWalletBalance.toFixed(2),
+      pointDifference: pointDifference.toFixed(2), // Log the point difference
       position,
       leverage,
-      priceDiff: (latestPrice - entryPrice) / entryPrice,
-      oldCondition: Math.abs(newPnl) >= initialWalletBalance,
-      newCondition: newPnl <= -initialWalletBalance
+      condition: newPnl <= -initialWalletBalance
     });
-    
-    if (newPnl <= -initialWalletBalance) {
+
+    // Ensure initialWalletBalance is positive before checking liquidation
+    // Use a small tolerance to avoid floating point issues
+    if (initialWalletBalance > 0.01 && newPnl <= -(initialWalletBalance - 0.01)) {
       console.log("LIQUIDATION TRIGGERED - Negative PnL exceeds initial balance");
       handleLiquidation();
-      return;
+      return; // Stop further updates if liquidated
     }
-    
-    // Calculate PNL percentage relative to total position value
-    const pnlPercentage = (newPnl / (initialWalletBalance * leverage)) * 100;
-    
+
+    // Calculate PNL percentage relative to initial margin (for emotion/heart rate logic)
+    const pnlPercentage = initialWalletBalance > 0 ? (newPnl / initialWalletBalance) * 100 : 0; // PNL relative to margin
+
     // Update heart rate based on PNL and leverage
     const baseHeartRate = 75;
     const pnlEffect = Math.abs(pnlPercentage) * 0.5;
     const leverageEffect = (leverage / 100) * 30;
     const positionEffect = position ? 15 : 0;
-    
+
     let newHeartRate = Math.round(baseHeartRate + pnlEffect + leverageEffect + positionEffect);
-    
+
     // Add random fluctuations
     newHeartRate += Math.round(Math.random() * 5 - 2);
-    
+
     // Ensure heart rate stays within realistic bounds
     newHeartRate = Math.min(200, Math.max(60, newHeartRate));
     setHeartRate(newHeartRate);
-    
+
     // Update emotions based on multiple factors
     let newEmotion = 'neutral';
-    
-    // Get initial wallet balance (balance at position entry)
-    const initialBalance = walletBalance - newPnl;
-    
-    if (newPnl < -initialBalance * 0.3) {
-      newEmotion = 'panicked';
-      // Rapidly decrease sanity during heavy losses
-      setSanity(s => Math.round(Math.max(0, s - 0.2) * 10) / 10);
-    } else if (newPnl < -initialBalance * 0.1) {
-      newEmotion = 'stressed';
-      // Slowly decrease sanity during moderate losses
-      setSanity(s => Math.round(Math.max(0, s - 0.1) * 10) / 10);
-    } else if (newPnl > initialBalance * 0.2) {
-      newEmotion = 'euphoric';
-      // Small sanity boost during big wins
-      setSanity(s => Math.round(Math.min(8, s + 0.05) * 10) / 10);
-    } else if (newPnl > initialBalance * 0.1) {
-      newEmotion = 'happy';
+
+    // Use initialBalance for emotion triggers (balance at the start of the trade)
+    const initialBalanceForEmotion = initialWalletBalance; // Use the correctly calculated initial balance
+
+    // Adjust emotion triggers based on PNL relative to initial margin
+    if (initialBalanceForEmotion > 0) { // Only trigger emotions if there was margin
+        if (newPnl < -initialBalanceForEmotion * 0.5) { // More significant loss threshold for panic
+            newEmotion = 'panicked';
+            // Rapidly decrease sanity during heavy losses
+            setSanity(s => Math.round(Math.max(0, s - 0.2) * 10) / 10);
+        } else if (newPnl < -initialBalanceForEmotion * 0.2) { // Adjusted threshold for stress
+            newEmotion = 'stressed';
+            // Slowly decrease sanity during moderate losses
+            setSanity(s => Math.round(Math.max(0, s - 0.1) * 10) / 10);
+        } else if (newPnl > initialBalanceForEmotion * 0.3) { // Adjusted threshold for euphoria
+            newEmotion = 'euphoric';
+            // Small sanity boost during big wins
+            setSanity(s => Math.round(Math.min(8, s + 0.05) * 10) / 10);
+        } else if (newPnl > initialBalanceForEmotion * 0.15) { // Adjusted threshold for happy
+            newEmotion = 'happy';
+        }
     }
-    
+
+
     // Additional emotional triggers
-    if (leverage > 50 && Math.abs(pnlPercentage) > 5) {
+    // Keep high leverage trigger, but maybe adjust percentage threshold
+    if (leverage > 50 && Math.abs(pnlPercentage) > 10) { // Need 10% margin swing on high leverage for 'insane'
       newEmotion = 'insane';
       setSanity(s => Math.round(Math.max(0, s - 0.15) * 10) / 10);
     }
-    
+
     setEmotion(newEmotion);
   };
   
@@ -736,6 +866,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   
   // Format price
   const formatPrice = (price) => {
+    // Display price points with 1 decimal place
     return new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
@@ -772,7 +903,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   
   // Calculate chart scaling for visible range
   const getChartScaling = () => {
-    if (chartData.length === 0) return { min: 9000, max: 11000 };
+    if (chartData.length === 0) return { min: 4500, max: 5500 }; // Default scaling around start price
     
     const visibleData = chartData.slice(visibleRange.start, visibleRange.end);
     
@@ -783,27 +914,40 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     });
     
     // Increase padding for better visualization
-    const padding = (max - min) * 0.3;
+    const range = max - min;
+    const padding = range * 0.3; // 30% padding
     
-    // Ensure min and max are different enough for good scaling
-    if (max - min < 100) {
+    // Ensure min and max are different enough for good scaling, use absolute points
+    const minRange = 50; // Minimum point range to display
+    if (range < minRange) {
       const midPoint = (max + min) / 2;
-      min = midPoint - 50;
-      max = midPoint + 50;
+      min = midPoint - (minRange / 2);
+      max = midPoint + (minRange / 2);
     }
     
-    // If we have a position, ensure entry price is visible
+    // If we have a position, ensure entry price is visible with some margin
     if (position && entryPrice) {
-      min = Math.min(min, entryPrice * 0.98);
-      max = Math.max(max, entryPrice * 1.02);
+       const entryPadding = range * 0.1; // Smaller padding around entry price
+       min = Math.min(min, entryPrice - entryPadding);
+       max = Math.max(max, entryPrice + entryPadding);
     }
     
-    return { min: min - padding, max: max + padding };
+    // Apply the larger padding calculated earlier
+    let finalMin = min - padding;
+    let finalMax = max + padding;
+
+    // Clamp final scaling within reasonable bounds if needed (optional)
+    // finalMin = Math.max(0, finalMin);
+    // finalMax = Math.min(9999, finalMax);
+
+    return { min: finalMin, max: finalMax };
   };
   
   // Get price position on chart (0-100%)
   const getPricePosition = (price) => {
     const { min, max } = getChartScaling();
+    // Avoid division by zero if min and max are the same
+    if (max - min === 0) return 50; 
     return 100 - ((price - min) / (max - min) * 100);
   };
   
@@ -818,15 +962,16 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       handleClose();
     }
     
-    // Use the entire wallet balance as the position size
-    const currentPositionSize = walletBalance;
+    // Use the entire wallet balance as the position size (margin)
+    const currentMargin = walletBalance; // Use current balance as margin
     
     setPosition('buy');
     setEntryPrice(latestPrice);
-    setPnl(0);
+    setPnl(0); // Reset PNL when opening new position
     
     // Calculate and set liquidation price
-    const liqPrice = calculateLiquidationPrice('buy', latestPrice, currentPositionSize, leverage);
+    // Pass the actual margin used (currentMargin) to calculate liquidation
+    const liqPrice = calculateLiquidationPrice('buy', latestPrice, currentMargin, leverage);
     setLiquidationPrice(liqPrice);
     
     // Immediate emotional response to taking a position
@@ -847,7 +992,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     
     // Brief emotional response
     setEmotion('excited');
-    setTimeout(() => updatePnl(), 1000);
+    setTimeout(() => updatePnl(), 1000); // Update PNL shortly after opening
   };
   
   // Handle sell with enhanced trader responses
@@ -861,15 +1006,16 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       handleClose();
     }
     
-    // Use the entire wallet balance as the position size
-    const currentPositionSize = walletBalance;
+    // Use the entire wallet balance as the position size (margin)
+    const currentMargin = walletBalance; // Use current balance as margin
     
     setPosition('sell');
     setEntryPrice(latestPrice);
-    setPnl(0);
+    setPnl(0); // Reset PNL when opening new position
     
     // Calculate and set liquidation price
-    const liqPrice = calculateLiquidationPrice('sell', latestPrice, currentPositionSize, leverage);
+    // Pass the actual margin used (currentMargin) to calculate liquidation
+    const liqPrice = calculateLiquidationPrice('sell', latestPrice, currentMargin, leverage);
     setLiquidationPrice(liqPrice);
     
     // Immediate emotional response to taking a position
@@ -890,7 +1036,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     
     // Brief emotional response
     setEmotion('excited');
-    setTimeout(() => updatePnl(), 1000);
+    setTimeout(() => updatePnl(), 1000); // Update PNL shortly after opening
   };
   
   // Get trader emotion emoji with enhanced states
@@ -1191,4 +1337,4 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   );
 };
 
-export default InteractiveTradingPreview; 
+export default InteractiveTradingPreview;
