@@ -5,8 +5,19 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
   { ignores: ['dist'] },
+  // Configuration for Supabase Edge Functions (Deno environment)
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['supabase/functions/**/*.{js,ts}'], // Apply to JS/TS files in functions dir
+    languageOptions: {
+      globals: globals.deno, // Add Deno globals
+    },
+    rules: {
+      // Add any function-specific rules here if needed
+    },
+  },
+  // Configuration for React frontend (Browser environment)
+  {
+    files: ['src/**/*.{js,jsx}'], // Apply only to src dir now
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,

@@ -1,14 +1,20 @@
 # Project Context
 
 ## Summary
-- **Current State:** The project is a React-based frontend MVP of the "Stop Being Poor" trading simulation game, built with Vite and styled using Tailwind CSS. The core game flow (Start -> Character Select -> Trading -> Game Over) and main UI components are defined in the codebase and detailed in the GDD/PRD. The `firebase` dependency is present but not utilized within the MVP scope.
+- **Current State:** The project is a React-based frontend MVP of the "Stop Being Poor" trading simulation game, built with Vite and styled using Tailwind CSS. Core game flow and UI components are defined. Integration with Supabase Edge Functions has begun, starting with access code verification. The `firebase` dependency remains unused.
 - **Date:** 2025-04-30
 
 ## Frontend
 - **Current Focus:** Implementing the core game mechanics and UI components as specified in the GDD and PRD. This includes the real-time chart simulation, PNL calculation, leverage application, liquidation logic, timer, Sanity Meter, Heart Rate, and the various screens and panels.
-- **Recent Changes:** Memory Bank updated with detailed information from `Project Documentation/GDD.md` and `Project Documentation/PRD.md` (2025-04-30).
+- **Recent Changes:**
+    - Integrated `src/components/AccessCodeVerification.jsx` with the `verify-access-code` Supabase Edge Function (2025-04-30).
+    - Created `src/supabaseClient.js` for Supabase client initialization (2025-04-30).
+    - Memory Bank updated with detailed information from `Project Documentation/GDD.md` and `Project Documentation/PRD.md` (2025-04-30).
+    - Implemented conditional rendering in `src/main.jsx` to show `AccessCodeVerification` first, then `App` upon successful verification (2025-04-30).
+    - Moved Supabase credentials from `src/supabaseClient.js` to `.env` file and updated client to use `import.meta.env` (VITE_ prefix required) (2025-04-30).
+    - Added `.env` to `.gitignore` (2025-04-30).
 - **Known Issues:** The actual implementation of the complex game mechanics (chart data generation/simulation, precise PNL/liquidation calculation logic, Sanity/Heart Rate dynamics) within the React components is the primary remaining task for the MVP. Integration of the `firebase` dependency is not defined for the MVP.
-- **Patterns & Decisions:** Continued use of React functional components and hooks. Component structure follows the UI breakdown in the GDD/PRD. Styling via Tailwind CSS and custom CSS for retro effects. State management is handled locally within components, particularly `InteractiveTradingPreview.jsx`. Viewport scaling is managed by `GameViewportScaler`.
+- **Patterns & Decisions:** Continued use of React functional components and hooks. Component structure follows UI breakdown. Styling via Tailwind CSS and custom CSS. State management primarily local, with top-level state (`isVerified`) managed in `main.jsx` controlling the initial application view (Verification vs. App). Viewport scaling via `GameViewportScaler`. Supabase client initialized in a dedicated utility file (`src/supabaseClient.js`), reading credentials securely from environment variables (`.env` via `import.meta.env`). Supabase Edge Functions invoked for specific backend interactions.
 - **Next Steps:**
     1.  Implement the real-time candlestick chart data simulation and rendering logic in `ChartDisplay.jsx`.
     2.  Develop the core trading logic in `InteractiveTradingPreview.jsx`, including handling BUY/SELL/CLOSE actions, calculating real-time PNL, applying leverage, and managing the wallet balance.
@@ -20,10 +26,12 @@
     8.  Address non-functional requirements (NFRs) related to performance and usability.
 
 ## Backend
-- **Current Focus:** N/A (Confirmed as frontend-only for MVP).
-- **Recent Changes:** N/A.
-- **Known Issues:** No backend services are implemented. The purpose and integration plan for the `firebase` dependency are undefined within the MVP scope.
-- **Patterns & Decisions:** Decision to keep MVP frontend-only. Firebase is noted as a potential future BaaS.
+- **Current Focus:** Integrating specific features via Supabase Edge Functions as needed (e.g., access code verification).
+- **Recent Changes:**
+    - Simplified `verify-access-code` Supabase Edge Function logic to only check for code existence, removing usage tracking and expiry (2025-04-30).
+    - Implemented and integrated the initial `verify-access-code` Supabase Edge Function (2025-04-30).
+- **Known Issues:** Backend logic is limited to specific Supabase Edge Functions. The `firebase` dependency remains unused and its purpose undefined for the MVP.
+- **Patterns & Decisions:** Using Supabase Edge Functions for required backend logic. Access code verification simply checks for the code's presence in the database (`access_codes` table). Firebase remains a potential future BaaS.
 - **Next Steps:** If future features (like leaderboards or user accounts) require a backend, define requirements and plan implementation (potentially using Firebase as noted in future considerations).
 
 ## Security

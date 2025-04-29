@@ -8,7 +8,9 @@
 - **Frontend:**
     - `react`: ^18.2.0 (UI Library)
     - `react-dom`: ^18.2.0 (React DOM rendering)
-- **Backend/Database (Potential):**
+    - `@supabase/supabase-js`: ^2.x.x (Supabase client library - Check package.json for exact version)
+- **Backend/Database:**
+    - `supabase-js`: Used for interacting with Supabase services (Edge Functions).
     - `firebase`: ^11.4.0 (Backend-as-a-Service - included but not used in MVP)
 - **Dev Dependencies:**
     - `@types/react`: ^18.2.15 (TypeScript definitions - although project uses JS/JSX)
@@ -29,6 +31,7 @@
 - **Build Tool:** Vite (`vite build` for production).
 - **Dev Server:** Vite (`vite` or `npm run dev`).
 - **Package Manager:** npm.
+- **Backend Interaction:** Supabase Edge Functions invoked via `supabase-js` client.
 - **Linter:** ESLint (configured via `eslint.config.js`).
 - **Styling:** Tailwind CSS for layout and utility classes, supplemented by Custom CSS (`App.css`, `index.css`, inline styles) for specific pixel art styling, animations, and component details. PostCSS is used for processing CSS.
 - **State Management:** Primarily React's built-in `useState` and `useEffect` hooks, particularly within the `InteractiveTradingPreview` component. Props are used to pass data to child components.
