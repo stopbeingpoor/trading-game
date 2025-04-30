@@ -1,55 +1,58 @@
 # Project Context
 
-## Summary
-- **Current State:** The project is a React-based frontend MVP of the "Stop Being Poor" trading simulation game, built with Vite and styled using Tailwind CSS. The core game flow (Start -> Character Select -> Trading -> Game Over) and main UI components are defined in the codebase and detailed in the GDD/PRD. The `firebase` dependency is present but not utilized within the MVP scope.
-- **Date:** 2025-04-30
+**Last Updated:** 2025-04-30 11:24:00 PM AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
 
-## Frontend
-- **Current Focus:** Implementing the core game mechanics and UI components as specified in the GDD and PRD. This includes the real-time chart simulation, PNL calculation, leverage application, liquidation logic, timer, Sanity Meter, Heart Rate, and the various screens and panels.
-- **Recent Changes:** Memory Bank updated with detailed information from `Project Documentation/GDD.md` and `Project Documentation/PRD.md` (2025-04-30).
-- **Known Issues:** The actual implementation of the complex game mechanics (chart data generation/simulation, precise PNL/liquidation calculation logic, Sanity/Heart Rate dynamics) within the React components is the primary remaining task for the MVP. Integration of the `firebase` dependency is not defined for the MVP.
-- **Patterns & Decisions:** Continued use of React functional components and hooks. Component structure follows the UI breakdown in the GDD/PRD. Styling via Tailwind CSS and custom CSS for retro effects. State management is handled locally within components, particularly `InteractiveTradingPreview.jsx`. Viewport scaling is managed by `GameViewportScaler`.
-- **Next Steps:**
-    1.  Implement the real-time candlestick chart data simulation and rendering logic in `ChartDisplay.jsx`.
-    2.  Develop the core trading logic in `InteractiveTradingPreview.jsx`, including handling BUY/SELL/CLOSE actions, calculating real-time PNL, applying leverage, and managing the wallet balance.
-    3.  Implement the liquidation mechanic.
-    4.  Implement the game timer.
-    5.  Develop the logic for the Sanity Meter and Heart Rate based on game events and state.
-    6.  Complete the `GameOver.jsx` component to display final results and trade history.
-    7.  Ensure all functional requirements (FRs) from the PRD are met.
-    8.  Address non-functional requirements (NFRs) related to performance and usability.
+---
 
-## Backend
-- **Current Focus:** N/A (Confirmed as frontend-only for MVP).
-- **Recent Changes:** N/A.
-- **Known Issues:** No backend services are implemented. The purpose and integration plan for the `firebase` dependency are undefined within the MVP scope.
-- **Patterns & Decisions:** Decision to keep MVP frontend-only. Firebase is noted as a potential future BaaS.
-- **Next Steps:** If future features (like leaderboards or user accounts) require a backend, define requirements and plan implementation (potentially using Firebase as noted in future considerations).
+## Current Iteration / Sprint Goal
+> [Enhance project documentation by making the Game Design Document more comprehensive and elegant.]
 
-## Security
-- **Current Focus:** N/A (Minimal requirements for frontend-only MVP).
-- **Recent Changes:** N/A.
-- **Known Issues:** Security requirements and implementation will be necessary if backend features involving user data or persistent state are added (e.g., authentication, database access control).
-- **Patterns & Decisions:** N/A.
-- **Next Steps:** Define and implement security measures if backend/database features are added in the future.
+## Overall Status Summary
+[The Game Design Document (GDD.md) has been made more comprehensive and elegant. The memory bank provides a more complete picture of the project. The unused Firebase dependency was removed. The requested background GIF has been applied and darkened on the Access Code, Start Game, and Character Select pages. Character selection and the main game screen now use dynamic character images instead of emojis.]
 
-## Database
-- **Current Focus:** N/A (Game state is in-memory).
-- **Recent Changes:** N/A.
-- **Known Issues:** No persistent database is used for the MVP. Game state is lost upon page refresh or game restart.
-- **Patterns & Decisions:** Game state managed within React component state. Persistent storage is a future consideration.
-- **Next Steps:** If persistent features (like high scores) are added, select and implement a database solution (e.g., Firebase Firestore/Realtime Database).
+---
 
-## Infrastructure
-- **Current Focus:** Utilizing Vite for the development server and build process.
-- **Recent Changes:** N/A.
-- **Known Issues:** No formal CI/CD pipeline or automated deployment process is configured.
-- **Patterns & Decisions:** Vite is used for its fast development server and efficient builds. Output is static, suitable for simple hosting.
-- **Next Steps:** Set up a CI/CD pipeline (e.g., using GitHub Actions as the project is likely in a Git repository) to automate builds and deployments to a chosen static hosting provider (e.g., Netlify, Vercel).
+## Key Blockers / Impediments
+- [ ] [BLOCKER-002] The functionality of `FullscreenButton.jsx` and `GameViewportScaler.jsx` has not been fully documented as their code was not read. - *(Impacts: Complete understanding of UI layout and scaling)*
 
-## Other
-- **Current Focus:** Reviewing GDD/PRD for overall game design and requirements.
-- **Recent Changes:** Detailed game mechanics, UI elements, and functional/non-functional requirements documented in Memory Bank based on GDD/PRD (2025-04-30).
-- **Known Issues:** Automated testing infrastructure is not set up. Audio implementation is a future consideration.
-- **Patterns & Decisions:** ESLint is used for code linting.
-- **Next Steps:** Configure and implement automated tests (unit, integration) to ensure code quality and verify functional requirements. Consider implementing audio as a future enhancement. Refine chart interaction based on GDD future considerations.
+---
+
+## Current Focus (In Progress)
+- [ ] [TASK-003] Begin implementing user authentication with Supabase. - *(Status: To Do)*
+
+## Up Next (To Do)
+1.  [ ] [TASK-006] Read and document the functionality of `FullscreenButton.jsx` and `GameViewportScaler.jsx`.
+2.  [ ] [TASK-007] Explore Supabase-specific files (e.g., Edge Functions code, migration files) to gather more detailed backend information for the memory bank.
+
+## Recently Completed (Done)
+- [x] [TASK-UI-002] Darken background GIF on Access Code, Start Game, and Character Select pages. - *(Completed: 2025-04-30)*
+- [x] [TASK-UI-001] Apply background GIF to Access Code, Start Game, and Character Select pages. - *(Completed: 2025-04-30)*
+- [x] [TASK-INIT-001] Create memory-bank/ProjectAndProduct.md. - *(Completed: 2025-04-30)*
+- [x] [TASK-INIT-002] Create memory-bank/DesignAndTech.md. - *(Completed: 2025-04-30)*
+- [x] [TASK-001] Create and populate memory-bank/context.md. - *(Completed: 2025-04-30)*
+- [x] [TASK-UPDATE-001] Update memory-bank/ProjectAndProduct.md based on initial code analysis. - *(Completed: 2025-04-30)*
+- [x] [TASK-UPDATE-002] Update memory-bank/DesignAndTech.md based on initial code analysis. - *(Completed: 2025-04-30)*
+- [x] [TASK-READ-ALL-FRONTEND] Read all relevant frontend code files and configuration. - *(Completed: 2025-04-30)*
+- [x] [TASK-UPDATE-P&P-COMPREHENSIVE] Update memory-bank/ProjectAndProduct.md with comprehensive frontend details. - *(Completed: 2025-04-30)*
+- [x] [TASK-UPDATE-D&T-COMPREHENSIVE] Update memory-bank/DesignAndTech.md with comprehensive frontend details. - *(Completed: 2025-04-30)*
+- [x] [TASK-UPDATE-GDD-COMPREHENSIVE] Make Game Design Document more comprehensive and elegant. - *(Completed: 2025-04-30)*
+- [x] [TASK-005] Investigate and remove the usage of the 'firebase' dependency. - *(Completed: 2025-04-30)*
+
+- [x] [TASK-UI-003] Replace character emojis with images in CharacterSelect.jsx and TradingPanel.jsx. - *(Completed: 2025-04-30)*
+- [x] [BUG-001] Fix ReferenceError: Cannot access 'updateChart' before initialization in InteractiveTradingPreview.jsx. - *(Completed: 2025-05-01)*
+- [x] [BUG-002] Fix ReferenceError: Cannot access 'setCurrentPrice' before initialization in InteractiveTradingPreview.jsx. - *(Completed: 2025-05-01)*
+---
+
+## Key Decisions / Learnings (Recent/Tactical)
+- Replaced static emojis with dynamic character images in CharacterSelect.jsx and TradingPanel.jsx for improved visual representation. *(2025-04-30)*
+- Added a semi-transparent black overlay div to the background containers to darken the background GIF as requested by the user. *(2025-04-30)*
+- Applied background GIF using inline styles and Tailwind CSS to relevant page components (`App.jsx`, `AccessCodeVerification.jsx`, `CharacterSelect.jsx`). *(2025-04-30)*
+- Decided to use Supabase for backend services to accelerate development. *(2025-04-30)*
+- Confirmed use of React, Supabase client, and Supabase Edge Functions for access code verification. *(2025-04-30)*
+- Noted the presence of an unexplained 'firebase' dependency. *(2025-04-30)*
+- Identified key UI components and their roles in the application flow. *(2025-04-30)*
+- Documented the retro pixel art visual theme and styling approach. *(2025-04-30)*
+- Understood the basic structure and interaction of frontend components. *(2025-04-30)*
+- Successfully updated GDD.md with detailed gameplay, UI, art, and technical information. *(2025-04-30)*
+- Removed the unused 'firebase' dependency from the project. *(2025-04-30)*
+- Resolved 'setCurrentPrice' initialization error by moving useState declarations before the useCallback hook that uses them in InteractiveTradingPreview.jsx. *(2025-05-01)*

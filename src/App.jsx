@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import InteractiveTradingPreview from './components/InteractiveTradingPreview';
 import GameViewportScaler from './components/GameViewportScaler'; // Import the scaler
 import CharacterSelect from './components/CharacterSelect'; // Import the new component
+import BackgroundGif from './assets/background/SBP.gif'; // Import the background GIF
 import './App.css';
 
 // Define game states
@@ -20,28 +21,39 @@ function App() {
   };
 
   const handleCharacterSelect = (character) => {
+    console.log('Character selected:', character);
     setSelectedCharacter(character);
     setGameState(GAME_STATE.TRADING);
+    console.log('Game state updated to:', GAME_STATE.TRADING);
   };
 
   const renderContent = () => {
     switch (gameState) {
       case GAME_STATE.CHARACTER_SELECT:
-        return <CharacterSelect onSelect={handleCharacterSelect} />;
+        return <CharacterSelect onCharacterSelect={handleCharacterSelect} />;
       case GAME_STATE.TRADING:
         // Pass selectedCharacter to the trading preview
+        // Pass selectedCharacter as 'character' prop
         return <InteractiveTradingPreview selectedCharacter={selectedCharacter} />;
       case GAME_STATE.START:
       default:
         return (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-black text-[#00ff00]">
-            <h1 className="text-4xl font-['Press_Start_2P'] mb-8">STOP BEING POOR</h1>
-            <button
-              onClick={handleStartGame}
-              className="pixel-button bg-[#00ff00] text-black hover:bg-[#00cc00] px-8 py-4 text-xl font-['Press_Start_2P']"
-            >
-              START GAME
-            </button>
+          <div
+            className="h-full w-full relative flex flex-col items-center justify-center text-[#00ff00] bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${BackgroundGif})` }}
+          >
+            {/* Overlay div for darkening */}
+            <div className="absolute inset-0 bg-black opacity-50"></div>
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center">
+              <h1 className="text-4xl font-['Press_Start_2P'] mb-8">STOP BEING POOR</h1>
+              <button
+                onClick={handleStartGame}
+                className="pixel-button bg-[#00ff00] text-black hover:bg-[#00cc00] px-8 py-4 text-xl font-['Press_Start_2P']"
+              >
+                START GAME
+              </button>
+            </div>
           </div>
         );
     }

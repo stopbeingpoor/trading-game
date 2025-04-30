@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import GameHeader from './GameHeader'; // Import the new component
 import ChartDisplay from './ChartDisplay'; // Import the chart component
 import TradingPanel from './TradingPanel'; // Import the controls panel component
@@ -290,96 +290,98 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     };
   }, []);
 
-  // Game states
-  const [position, setPosition] = useState(null);
-  const [entryPrice, setEntryPrice] = useState(null);
-  const [pnl, setPnl] = useState(0);
-  const [totalPnl, setTotalPnl] = useState(0);
-  const [walletBalance, setWalletBalance] = useState(10000); // Starting balance $10k
-  const [tradeHistory, setTradeHistory] = useState([]);
-  const [chartData, setChartData] = useState([]);
-  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 15 });
-  const [currentPrice, setCurrentPrice] = useState(5000); // Start price in points
-  const [timeElapsed, setTimeElapsed] = useState(0);
-  const [sanity, setSanity] = useState(8);
-  const [heartRate, setHeartRate] = useState(80);
-  const [emotion, setEmotion] = useState('neutral');
-  const [leverage, setLeverage] = useState(1);
-  const [showMobileControls, setShowMobileControls] = useState(false);
-  const [chartZoom, setChartZoom] = useState(1);
-  const [chartOffset, setChartOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState(null);
-  const [followingLatest, setFollowingLatest] = useState(true);
-  const followingLatestRef = useRef(followingLatest); // Ref to track current value
-  const [lastKnownRange, setLastKnownRange] = useState({ start: 0, end: 15 });
-  const [liquidationPrice, setLiquidationPrice] = useState(null);
-  const [isGameOver, setIsGameOver] = useState(false);
-  const [isLiquidated, setIsLiquidated] = useState(false);
-  const [liquidationDetails, setLiquidationDetails] = useState(null);
-  const [showLiquidationAnimation, setShowLiquidationAnimation] = useState(false);
-  const [showProfitAnimation, setShowProfitAnimation] = useState(false); // State for profit animation
-  const [showLossAnimation, setShowLossAnimation] = useState(false); // State for loss animation
-  
-  const candleStickSeries = useRef(null);
-  const volumeSeries = useRef(null);
-  const entryLine = useRef(null);
-  const chartRef = useRef(null);
-
-  // Define vibrant colors for the chart
-  const chartColors = {
-    background: '#000000',
-    grid: '#1a1a1a',
-    text: '#00ff00',
-    upCandle: '#00ff00',
-    downCandle: '#ff3333',
-    volume: {
-      up: 'rgba(0, 255, 0, 0.3)',
-      down: 'rgba(255, 51, 51, 0.3)'
+  // Calculate liquidation price based on points and $10/point PNL
+  const calculateLiquidationPrice = (type, entry, initialMargin, leverageUsed) => {
+    // Ensure initialMargin is positive and leverage is valid
+    if (initialMargin <= 0 || leverageUsed <= 0) {
+        console.error("Cannot calculate liquidation price with zero or negative margin/leverage.", { initialMargin, leverageUsed });
+        return null;
     }
+
+    const pnlPerPoint = 10;
+    // Liquidation occurs when loss = initialMargin
+    // Loss = abs(pointDifference) * pnlPerPoint * leverageUsed
+    // initialMargin = abs(pointDifference) * pnlPerPoint * leverageUsed
+    // abs(pointDifference) = initialMargin / (pnlPerPoint * leverageUsed)
+    const maxLossPoints = initialMargin / (pnlPerPoint * leverageUsed);
+
+    let liqPrice;
+    if (type === 'buy') {
+      // Price needs to drop by maxLossPoints from entry
+      liqPrice = entry - maxLossPoints;
+    } else { // type === 'sell'
+      // Price needs to rise by maxLossPoints from entry
+      liqPrice = entry + maxLossPoints;
+    }
+    // Clamp liquidation price within the 0-9999 range
+    return Math.max(0, liqPrice); // Remove 9999 clamp
   };
-  
-  // Initialize chart data
-  useEffect(() => {
-    const initializeGame = () => {
-      const initialData = generateInitialData();
-      setChartData(initialData);
-      // Set initial current price
-      if (initialData.length > 0) {
-        setCurrentPrice(initialData[initialData.length - 1].close);
-      }
-    };
 
-    if (chartData.length === 0) {
-      initializeGame();
-    }
-    
-    // Start the chart update interval
-    const interval = setInterval(() => {
-      updateChart();
-      setTimeElapsed(prev => {
-        const newTime = prev + 1;
-        // Check if time is up (120 seconds)
-        if (newTime >= 120) {
-          setIsGameOver(true);
-          clearInterval(interval);
-        }
-        return newTime;
-      });
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [chartData.length === 0]); // Add dependency to re-run when chart data is cleared
-  
-  // Update PNL when position or chart data changes
-  useEffect(() => {
-    if (position && entryPrice && chartData.length > 0) {
-      updatePnl();
-    }
-  }, [position, entryPrice, chartData]);
+  // Helper function to calculate True Range (Memoized)
+  const calculateTrueRange = useCallback((candle, prevCandle) => {
+    if (!prevCandle) return candle.high - candle.low; // Handle first candle
+    const highLow = candle.high - candle.low;
+    const highPrevClose = Math.abs(candle.high - prevCandle.close);
+    const lowPrevClose = Math.abs(candle.low - prevCandle.close);
+    return Math.max(highLow, highPrevClose, lowPrevClose);
+  }, []);
 
-  // Generate initial chart data
-  const generateInitialData = () => {
+  // Helper function to calculate Average True Range (ATR) (Memoized)
+  const calculateATR = useCallback((data, period = 14) => {
+    if (data.length < period) return null; // Not enough data
+
+    let trSum = 0;
+    const trueRanges = [];
+
+    // Calculate initial True Ranges and sum for the first ATR
+    // We need data going back period + 1 candles to calculate TR for the first candle in the period
+    const startIndex = Math.max(0, data.length - period -1);
+    for (let i = startIndex + 1; i < data.length; i++) {
+       const candle = data[i];
+       const prevCandle = data[i - 1]; // Should always exist given startIndex logic
+       const tr = calculateTrueRange(candle, prevCandle); // Use memoized version
+       trueRanges.push(tr);
+    }
+
+    // Calculate the first ATR (simple average of first 'period' TRs)
+    // Ensure we have enough true ranges calculated
+    if (trueRanges.length < period) return null;
+    trSum = trueRanges.slice(-period).reduce((sum, val) => sum + val, 0);
+    let atr = trSum / period;
+
+    // Note: For a more accurate ATR in a live scenario, you'd typically smooth it
+    // over the entire history. For this simulation, calculating based on the
+    // last 'period' candles on each update is a reasonable approximation.
+    // A more robust implementation would store previous ATR values.
+    return atr;
+  }, [calculateTrueRange]); // Dependency on memoized calculateTrueRange
+
+  // Helper function to find Support and Resistance levels (Memoized)
+  const findSupportResistance = useCallback((data, lookbackPeriod = 50) => {
+    if (data.length < lookbackPeriod) {
+      // Not enough data, return wide defaults or null
+      return { support: null, resistance: null };
+    }
+
+    const relevantData = data.slice(-lookbackPeriod);
+    let lowestLow = Infinity;
+    let highestHigh = -Infinity;
+
+    relevantData.forEach(candle => {
+      lowestLow = Math.min(lowestLow, candle.low);
+      highestHigh = Math.max(highestHigh, candle.high);
+    });
+
+     // Avoid returning Infinity if data was somehow invalid
+    if (lowestLow === Infinity || highestHigh === -Infinity) {
+        return { support: null, resistance: null };
+    }
+
+    return { support: lowestLow, resistance: highestHigh };
+  }, []);
+
+  // Generate initial chart data (Memoized)
+  const generateInitialData = useCallback(() => {
     const data = [];
     let price = 5000; // Starting price in points
     let momentum = 0; // Still -1 to 1
@@ -452,82 +454,22 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     }
     
     return data;
-  };
-  
-  // Helper function to calculate True Range
-  const calculateTrueRange = (candle, prevCandle) => {
-    if (!prevCandle) return candle.high - candle.low; // Handle first candle
-    const highLow = candle.high - candle.low;
-    const highPrevClose = Math.abs(candle.high - prevCandle.close);
-    const lowPrevClose = Math.abs(candle.low - prevCandle.close);
-    return Math.max(highLow, highPrevClose, lowPrevClose);
-  };
+  }, []);
 
-  // Helper function to calculate Average True Range (ATR)
-  const calculateATR = (data, period = 14) => {
-    if (data.length < period) return null; // Not enough data
-
-    let trSum = 0;
-    const trueRanges = [];
-
-    // Calculate initial True Ranges and sum for the first ATR
-    // We need data going back period + 1 candles to calculate TR for the first candle in the period
-    const startIndex = Math.max(0, data.length - period -1);
-    for (let i = startIndex + 1; i < data.length; i++) {
-       const candle = data[i];
-       const prevCandle = data[i - 1]; // Should always exist given startIndex logic
-       const tr = calculateTrueRange(candle, prevCandle);
-       trueRanges.push(tr);
-    }
-
-    // Calculate the first ATR (simple average of first 'period' TRs)
-    // Ensure we have enough true ranges calculated
-    if (trueRanges.length < period) return null;
-    trSum = trueRanges.slice(-period).reduce((sum, val) => sum + val, 0);
-    let atr = trSum / period;
-
-    // Note: For a more accurate ATR in a live scenario, you'd typically smooth it
-    // over the entire history. For this simulation, calculating based on the
-    // last 'period' candles on each update is a reasonable approximation.
-    // A more robust implementation would store previous ATR values.
-    return atr;
-  };
-
-  // Helper function to find Support and Resistance levels
-  const findSupportResistance = (data, lookbackPeriod = 50) => {
-    if (data.length < lookbackPeriod) {
-      // Not enough data, return wide defaults or null
-      return { support: null, resistance: null };
-    }
-
-    const relevantData = data.slice(-lookbackPeriod);
-    let lowestLow = Infinity;
-    let highestHigh = -Infinity;
-
-    relevantData.forEach(candle => {
-      lowestLow = Math.min(lowestLow, candle.low);
-      highestHigh = Math.max(highestHigh, candle.high);
-    });
-
-     // Avoid returning Infinity if data was somehow invalid
-    if (lowestLow === Infinity || highestHigh === -Infinity) {
-        return { support: null, resistance: null };
-    }
-
-    return { support: lowestLow, resistance: highestHigh };
-  };
-
-  // Update chart with new data
-  const updateChart = () => {
+  // Update chart with new data (Memoized)
+const [chartData, setChartData] = useState([]);
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 15 });
+  const [currentPrice, setCurrentPrice] = useState(5000); // Start price in points
+  const updateChart = useCallback(() => {
     setChartData(data => {
-      if (data.length === 0) return generateInitialData();
+      if (data.length === 0) return generateInitialData(); // Should ideally not happen if timer starts after init
       
       const lastCandle = data[data.length - 1];
       const open = lastCandle.close;
       
       // Get recent price movement (still using relative for momentum calculation)
       const recentCandles = data.slice(-5);
-      const priceChanges = recentCandles.map((c, i) => 
+      const priceChanges = recentCandles.map((c, i) =>
         i > 0 ? (c.close - recentCandles[i-1].close) / recentCandles[i-1].close : 0
       );
       
@@ -558,17 +500,16 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       const { support, resistance } = findSupportResistance(data, srLookback);
       let srInfluence = 0; // Factor to adjust the change based on S/R proximity (in points)
       const proximityThreshold = volatility * 0.5; // How close (in points) to S/R to trigger influence
-
       if (resistance && open > resistance - proximityThreshold) {
         // Near resistance: Increase downward pressure
         const distanceFactor = Math.max(0, 1 - (resistance - open) / proximityThreshold); // 0 far, 1 at level
         srInfluence = -volatility * distanceFactor * (0.5 + Math.random() * 0.5); // Random downward push in points
-        console.log(`Near Resistance (${resistance.toFixed(1)}). Influence: ${srInfluence.toFixed(4)}`);
+        // console.log(`Near Resistance (${resistance.toFixed(1)}). Influence: ${srInfluence.toFixed(4)}`); // Removed log
       } else if (support && open < support + proximityThreshold) {
         // Near support: Increase upward pressure
         const distanceFactor = Math.max(0, 1 - (open - support) / proximityThreshold); // 0 far, 1 at level
         srInfluence = volatility * distanceFactor * (0.5 + Math.random() * 0.5); // Random upward push in points
-        console.log(`Near Support (${support.toFixed(1)}). Influence: ${srInfluence.toFixed(4)}`);
+        // console.log(`Near Support (${support.toFixed(1)}). Influence: ${srInfluence.toFixed(4)}`); // Removed log
       }
       // --- End S/R Logic ---
 
@@ -611,14 +552,14 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         volume: Math.floor(Math.random() * 1000) * (1 + Math.abs(momentum) * 2)
       };
       
-      // Update current price
+      // Update current price state
       setCurrentPrice(close);
       
       // Keep up to 100 candles in history
       const updatedData = [...data.slice(-99), newCandle];
       
       // Update visible range only if following the latest candle
-      if (followingLatest) {
+      if (followingLatestRef.current) { // Use ref here as state might be stale inside callback
         setVisibleRange({
           start: Math.max(0, updatedData.length - 15),
           end: updatedData.length
@@ -628,46 +569,155 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       
       return updatedData;
     });
-  };
-  
-  // Calculate liquidation price based on points and $10/point PNL
-  const calculateLiquidationPrice = (type, entry, initialMargin, leverageUsed) => {
-    // Ensure initialMargin is positive and leverage is valid
-    if (initialMargin <= 0 || leverageUsed <= 0) {
-        console.error("Cannot calculate liquidation price with zero or negative margin/leverage.", { initialMargin, leverageUsed });
-        return null;
+  }, [generateInitialData, calculateATR, findSupportResistance, setCurrentPrice, setVisibleRange, setChartData]); // Removed followingLatest, setChartData, setCurrentPrice as they are setters or stable refs
+
+  // Game states
+  const [position, setPosition] = useState(null);
+  const [entryPrice, setEntryPrice] = useState(null);
+  const [pnl, setPnl] = useState(0);
+  const [totalPnl, setTotalPnl] = useState(0);
+  const [walletBalance, setWalletBalance] = useState(10000); // Starting balance $10k
+  const [tradeHistory, setTradeHistory] = useState([]);
+  const [timeElapsed, setTimeElapsed] = useState(0);
+  const [sanity, setSanity] = useState(8);
+  const [heartRate, setHeartRate] = useState(80);
+  const [emotion, setEmotion] = useState('neutral');
+  const [leverage, setLeverage] = useState(1);
+  const [showMobileControls, setShowMobileControls] = useState(false);
+  const [chartZoom, setChartZoom] = useState(1);
+  const [chartOffset, setChartOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
+  const [followingLatest, setFollowingLatest] = useState(true);
+  const [liquidationPrice, setLiquidationPrice] = useState(null);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [isLiquidated, setIsLiquidated] = useState(false);
+  const [liquidationDetails, setLiquidationDetails] = useState(null);
+  const [showLiquidationAnimation, setShowLiquidationAnimation] = useState(false);
+  const [showProfitAnimation, setShowProfitAnimation] = useState(false); // State for profit animation
+  const [showLossAnimation, setShowLossAnimation] = useState(false); // State for loss animation
+  const [initialMargin, setInitialMargin] = useState(0); // <-- ADDED: Store margin at trade entry
+
+  const chartRef = useRef(null);
+  const followingLatestRef = useRef(followingLatest); // Ref to track current value
+  const intervalRef = useRef(null); // <-- ADDED: Ref for the timer interval
+  const timeElapsedRef = useRef(timeElapsed); // <-- ADDED: Ref for time tracking in interval
+
+  // Effect for Initialization
+  useEffect(() => {
+    // Initialize chart data only if it's empty
+    if (chartData.length === 0) {
+      const initialData = generateInitialData();
+      setChartData(initialData);
+      // Set initial current price
+      if (initialData.length > 0) {
+        setCurrentPrice(initialData[initialData.length - 1].close);
+      }
+    }
+  }, [chartData.length, generateInitialData, setChartData, setCurrentPrice]); // Dependencies for initialization
+
+  // Effect for Timer Interval
+  useEffect(() => {
+    // Don't start the timer until chart data is initialized
+    if (chartData.length === 0) {
+      return; // Exit if no data yet
     }
 
-    const pnlPerPoint = 10;
-    // Liquidation occurs when loss = initialMargin
-    // Loss = abs(pointDifference) * pnlPerPoint * leverageUsed
-    // initialMargin = abs(pointDifference) * pnlPerPoint * leverageUsed
-    // abs(pointDifference) = initialMargin / (pnlPerPoint * leverageUsed)
-    const maxLossPoints = initialMargin / (pnlPerPoint * leverageUsed);
+    // Start the chart update interval using a ref
+    intervalRef.current = setInterval(() => {
+      updateChart(); // Call the memoized update function
 
-    let liqPrice;
-    if (type === 'buy') {
-      // Price needs to drop by maxLossPoints from entry
-      liqPrice = entry - maxLossPoints;
-    } else { // type === 'sell'
-      // Price needs to rise by maxLossPoints from entry
-      liqPrice = entry + maxLossPoints;
+      // Update time elapsed using ref and state setter
+      const newTime = timeElapsedRef.current + 1;
+      setTimeElapsed(newTime); // Update state for UI
+
+      // Check for game over condition (time limit)
+      if (newTime >= 120) {
+        setIsGameOver(true); // Update game over state
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current); // Clear interval using ref
+        }
+      }
+    }, 1000);
+
+    // Cleanup function to clear the interval when the component unmounts or dependencies change
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [chartData.length, updateChart, setTimeElapsed, setIsGameOver]); // Dependencies for the timer
+
+  // Handle liquidation (wrapped in useCallback)
+  const handleLiquidation = useCallback(() => {
+    // Use the stored initialMargin to calculate the loss
+    const marginLoss = -initialMargin;
+
+    console.log(`Liquidation: Losing initial margin of ${initialMargin.toFixed(2)}`);
+
+    // Store liquidation details
+    setLiquidationDetails({
+      type: position,
+      entryPrice: entryPrice,
+      liquidationPrice: currentPrice, // Price at the moment of liquidation check
+      leverage: leverage,
+      marginLost: initialMargin // Store the lost margin
+    });
+
+    // Add to trade history with liquidation flag
+    setTradeHistory(prev => [
+      ...prev,
+      {
+        type: position,
+        entry: entryPrice,
+        exit: currentPrice, // Price at liquidation
+        pnl: marginLoss, // The actual loss is the negative initial margin
+        timestamp: Date.now(),
+        liquidated: true
+      }
+    ]);
+
+    // Update total PNL and set wallet balance to zero
+    setTotalPnl(prev => prev + marginLoss);
+    setWalletBalance(0); // Wallet is wiped out
+
+    // Reset position state
+    setPosition(null);
+    setEntryPrice(null);
+    setPnl(0);
+    setLiquidationPrice(null);
+    setInitialMargin(0); // Reset the stored initial margin
+
+    // Emotional response to liquidation
+    setEmotion('panicked');
+    setSanity(s => Math.round(Math.max(0, s - 1.5) * 10) / 10); // Significant sanity hit
+    setHeartRate(prev => Math.min(200, prev + 40)); // Spike heart rate
+
+    // Play liquidation animation
+    setShowLiquidationAnimation(true);
+
+    // Set liquidation flag
+    setIsLiquidated(true);
+
+    // End the game after animation completes
+    // Ensure interval is cleared if game ends here
+    if (intervalRef.current) {
+        clearInterval(intervalRef.current);
     }
-    // Clamp liquidation price within the 0-9999 range
-    return Math.max(0, liqPrice); // Remove 9999 clamp
-  };
+    setTimeout(() => {
+      setIsGameOver(true);
+      setShowLiquidationAnimation(false);
+    }, 2000); // Animation duration
+  }, [position, entryPrice, currentPrice, leverage, initialMargin, setLiquidationDetails, setTradeHistory, setTotalPnl, setWalletBalance, setPosition, setEntryPrice, setPnl, setLiquidationPrice, setInitialMargin, setEmotion, setSanity, setHeartRate, setShowLiquidationAnimation, setIsLiquidated, setIsGameOver]); // Added dependencies
 
   // Update PNL calculation and trader state
-  const updatePnl = () => {
-    if (!position || !entryPrice) return;
+  const updatePnl = useCallback(() => {
+    // Ensure we have an active position, entry price, and valid initial margin
+    if (!position || !entryPrice || initialMargin <= 0) return;
 
     const latestPrice = chartData[chartData.length - 1]?.close || currentPrice;
     const pointDifference = latestPrice - entryPrice;
     const pnlPerPoint = 10; // $10 PNL per point change
-
-    // Get initial wallet balance (the margin used for the trade)
-    // Since the whole wallet is used as margin, this is the balance *at the time of entry*
-    const initialWalletBalance = walletBalance - pnl; // Back-calculate initial balance
 
     let newPnl;
     if (position === 'buy') {
@@ -680,142 +730,80 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
 
     setPnl(newPnl);
 
-    // Update wallet balance in real-time based on current PNL
-    setWalletBalance(initialWalletBalance + newPnl);
+    // Update wallet balance based on the stored initial margin and current PNL
+    setWalletBalance(initialMargin + newPnl);
 
-    // Check for liquidation - Liquidation occurs when negative PNL equals the initial margin
+    // Check for liquidation against the stored initialMargin
+    // Use a small tolerance for floating point comparisons
     console.log("PnL Check (Points):", {
       newPnl: newPnl.toFixed(2),
-      initialWalletBalance: initialWalletBalance.toFixed(2),
-      pointDifference: pointDifference.toFixed(2), // Log the point difference
+      initialMargin: initialMargin.toFixed(2), // Use initialMargin
+      pointDifference: pointDifference.toFixed(2),
       position,
       leverage,
-      condition: newPnl <= -initialWalletBalance
+      condition: newPnl <= -initialMargin
     });
 
-    // Ensure initialWalletBalance is positive before checking liquidation
-    // Use a small tolerance to avoid floating point issues
-    if (initialWalletBalance > 0.01 && newPnl <= -(initialWalletBalance - 0.01)) {
-      console.log("LIQUIDATION TRIGGERED - Negative PnL exceeds initial balance");
-      handleLiquidation();
+    if (newPnl <= -(initialMargin - 0.01)) {
+      console.log("LIQUIDATION TRIGGERED - Negative PnL exceeds initial margin");
+      handleLiquidation(); // handleLiquidation will use initialMargin
       return; // Stop further updates if liquidated
     }
 
-    // Calculate PNL percentage relative to initial margin (for emotion/heart rate logic)
-    const pnlPercentage = initialWalletBalance > 0 ? (newPnl / initialWalletBalance) * 100 : 0; // PNL relative to margin
+    // Calculate PNL percentage relative to initial margin for emotion/heart rate logic
+    const pnlPercentage = (newPnl / initialMargin) * 100;
 
     // Update heart rate based on PNL and leverage
     const baseHeartRate = 75;
     const pnlEffect = Math.abs(pnlPercentage) * 0.5;
     const leverageEffect = (leverage / 100) * 30;
-    const positionEffect = position ? 15 : 0;
+    const positionEffect = position ? 15 : 0; // Simplified: 15 if in position, 0 otherwise
 
     let newHeartRate = Math.round(baseHeartRate + pnlEffect + leverageEffect + positionEffect);
-
-    // Add random fluctuations
-    newHeartRate += Math.round(Math.random() * 5 - 2);
-
-    // Ensure heart rate stays within realistic bounds
-    newHeartRate = Math.min(200, Math.max(60, newHeartRate));
+    newHeartRate += Math.round(Math.random() * 5 - 2); // Random fluctuations
+    newHeartRate = Math.min(200, Math.max(60, newHeartRate)); // Clamp heart rate
     setHeartRate(newHeartRate);
 
-    // Update emotions based on multiple factors
+    // Update emotions based on PNL relative to initial margin
     let newEmotion = 'neutral';
-
-    // Use initialBalance for emotion triggers (balance at the start of the trade)
-    const initialBalanceForEmotion = initialWalletBalance; // Use the correctly calculated initial balance
-
-    // Adjust emotion triggers based on PNL relative to initial margin
-    if (initialBalanceForEmotion > 0) { // Only trigger emotions if there was margin
-        if (newPnl < -initialBalanceForEmotion * 0.5) { // More significant loss threshold for panic
-            newEmotion = 'panicked';
-            // Rapidly decrease sanity during heavy losses
-            setSanity(s => Math.round(Math.max(0, s - 0.2) * 10) / 10);
-        } else if (newPnl < -initialBalanceForEmotion * 0.2) { // Adjusted threshold for stress
-            newEmotion = 'stressed';
-            // Slowly decrease sanity during moderate losses
-            setSanity(s => Math.round(Math.max(0, s - 0.1) * 10) / 10);
-        } else if (newPnl > initialBalanceForEmotion * 0.3) { // Adjusted threshold for euphoria
-            newEmotion = 'euphoric';
-            // Small sanity boost during big wins
-            setSanity(s => Math.round(Math.min(8, s + 0.05) * 10) / 10);
-        } else if (newPnl > initialBalanceForEmotion * 0.15) { // Adjusted threshold for happy
-            newEmotion = 'happy';
-        }
+    if (newPnl < -initialMargin * 0.5) {
+      newEmotion = 'panicked';
+      setSanity(s => Math.round(Math.max(0, s - 0.2) * 10) / 10);
+    } else if (newPnl < -initialMargin * 0.2) {
+      newEmotion = 'stressed';
+      setSanity(s => Math.round(Math.max(0, s - 0.1) * 10) / 10);
+    } else if (newPnl > initialMargin * 0.3) {
+      newEmotion = 'euphoric';
+      setSanity(s => Math.round(Math.min(8, s + 0.05) * 10) / 10);
+    } else if (newPnl > initialMargin * 0.15) {
+      newEmotion = 'happy';
     }
 
-
-    // Additional emotional triggers
-    // Keep high leverage trigger, but maybe adjust percentage threshold
-    if (leverage > 50 && Math.abs(pnlPercentage) > 10) { // Need 10% margin swing on high leverage for 'insane'
+    // Additional trigger for high leverage insanity
+    if (leverage > 50 && Math.abs(pnlPercentage) > 10) {
       newEmotion = 'insane';
       setSanity(s => Math.round(Math.max(0, s - 0.15) * 10) / 10);
     }
 
     setEmotion(newEmotion);
-  };
-  
-  // Handle liquidation
-  const handleLiquidation = () => {
-    // When liquidated, lose the entire wallet balance as it's the full margin
-    const initialBalance = walletBalance - pnl; // Get the balance at position entry
-    const marginLoss = -initialBalance; // Full balance loss
-    
-    // Store liquidation details
-    setLiquidationDetails({
-      type: position,
-      entryPrice: entryPrice,
-      liquidationPrice: currentPrice,
-      leverage: leverage
-    });
-    
-    // Add to trade history with liquidation flag
-    setTradeHistory(prev => [
-      ...prev,
-      {
-        type: position,
-        entry: entryPrice,
-        exit: currentPrice,
-        pnl: marginLoss,
-        timestamp: Date.now(),
-        liquidated: true
-      }
-    ]);
-    
-    // Update total PNL and set wallet balance to zero
-    setTotalPnl(prev => prev + marginLoss);
-    setWalletBalance(0); // Completely liquidated
-    
-    // Reset position
-    setPosition(null);
-    setEntryPrice(null);
-    setPnl(0);
-    setLiquidationPrice(null);
-    
-    // Emotional response to liquidation
-    setEmotion('panicked');
-    setSanity(s => Math.round(Math.max(0, s - 1.5) * 10) / 10);
-    setHeartRate(prev => Math.min(200, prev + 40));
-    
-    // Play liquidation animation
-    setShowLiquidationAnimation(true);
-    
-    // Set liquidation flag
-    setIsLiquidated(true);
-    
-    // End the game after animation completes
-    setTimeout(() => {
-      setIsGameOver(true);
-      setShowLiquidationAnimation(false);
-    }, 2000); // Animation duration
-  };
+
+  }, [position, entryPrice, initialMargin, chartData, currentPrice, leverage, handleLiquidation, setPnl, setWalletBalance, setHeartRate, setEmotion, setSanity]); // Updated dependencies
+
+  // Update PNL when relevant states change
+  useEffect(() => {
+    // Call updatePnl directly if conditions are met
+    if (position && entryPrice && chartData.length > 0 && initialMargin > 0) {
+      updatePnl();
+    }
+    // Note: PNL reset is handled within handleClose and handleLiquidation when position ends
+  }, [position, entryPrice, chartData, initialMargin, updatePnl]); // Dependencies for triggering PNL update
   
   // Handle close with enhanced trader responses
   const handleClose = () => {
     if (!position || !entryPrice) return;
     
     const latestPrice = currentPrice;
-    const finalPnl = pnl;
+    const finalPnl = pnl; // Use the last calculated PNL state
 
     // Trigger profit/loss animations
     if (finalPnl > 0) {
@@ -838,13 +826,15 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       }
     ]);
     
-    // Update total PNL only (wallet balance is already updated in real-time)
+    // Update total PNL only (wallet balance is already updated in real-time via updatePnl)
     setTotalPnl(prev => prev + finalPnl);
     
-    // Reset position
+    // Reset position state
     setPosition(null);
     setEntryPrice(null);
     setPnl(0);
+    setInitialMargin(0); // Reset initial margin
+    setLiquidationPrice(null); // Clear liquidation price
     
     // Emotional response to trade result
     if (finalPnl > 0) {
@@ -890,15 +880,6 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     const mins = Math.floor(remainingSeconds / 60);
     const secs = remainingSeconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-  
-  // Format time for tooltips
-  const formatCandleTime = (timestamp) => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    }).format(timestamp);
   };
   
   // Calculate chart scaling for visible range
@@ -964,13 +945,20 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     
     // Use the entire wallet balance as the position size (margin)
     const currentMargin = walletBalance; // Use current balance as margin
-    
+
+    // Check if margin is sufficient (e.g., > 0)
+    if (currentMargin <= 0) {
+        console.error("Cannot open position with zero or negative balance.");
+        // Optionally show a user message
+        return;
+    }
+
+    setInitialMargin(currentMargin); // <-- ADDED: Store the margin used
     setPosition('buy');
     setEntryPrice(latestPrice);
     setPnl(0); // Reset PNL when opening new position
-    
-    // Calculate and set liquidation price
-    // Pass the actual margin used (currentMargin) to calculate liquidation
+
+    // Calculate and set liquidation price using the actual margin
     const liqPrice = calculateLiquidationPrice('buy', latestPrice, currentMargin, leverage);
     setLiquidationPrice(liqPrice);
     
@@ -984,15 +972,23 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
 
     setSanity(prevSanity => {
       const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
-      if (newSanity <= 0) {
+      if (newSanity <= 0 && !isGameOver) { // Check !isGameOver to prevent multiple triggers
         setIsGameOver(true); // Trigger game over if sanity reaches zero
+        if (intervalRef.current) { // Stop timer if game over
+          clearInterval(intervalRef.current);
+        }
       }
       return newSanity;
     });
     
     // Brief emotional response
     setEmotion('excited');
-    setTimeout(() => updatePnl(), 1000); // Update PNL shortly after opening
+    setTimeout(() => {
+      // Ensure still in position before updating PNL
+      if (position === 'buy') {
+        updatePnl();
+      }
+    }, 1000); // Update PNL shortly after opening
   };
   
   // Handle sell with enhanced trader responses
@@ -1008,13 +1004,20 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     
     // Use the entire wallet balance as the position size (margin)
     const currentMargin = walletBalance; // Use current balance as margin
-    
+
+    // Check if margin is sufficient (e.g., > 0)
+    if (currentMargin <= 0) {
+        console.error("Cannot open position with zero or negative balance.");
+        // Optionally show a user message
+        return;
+    }
+
+    setInitialMargin(currentMargin); // <-- ADDED: Store the margin used
     setPosition('sell');
     setEntryPrice(latestPrice);
     setPnl(0); // Reset PNL when opening new position
-    
-    // Calculate and set liquidation price
-    // Pass the actual margin used (currentMargin) to calculate liquidation
+
+    // Calculate and set liquidation price using the actual margin
     const liqPrice = calculateLiquidationPrice('sell', latestPrice, currentMargin, leverage);
     setLiquidationPrice(liqPrice);
     
@@ -1028,15 +1031,23 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
 
     setSanity(prevSanity => {
       const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
-      if (newSanity <= 0) {
+      if (newSanity <= 0 && !isGameOver) { // Check !isGameOver to prevent multiple triggers
         setIsGameOver(true); // Trigger game over if sanity reaches zero
+        if (intervalRef.current) { // Stop timer if game over
+          clearInterval(intervalRef.current);
+        }
       }
       return newSanity;
     });
     
     // Brief emotional response
     setEmotion('excited');
-    setTimeout(() => updatePnl(), 1000); // Update PNL shortly after opening
+    setTimeout(() => {
+      // Ensure still in position before updating PNL
+      if (position === 'sell') {
+        updatePnl();
+      }
+    }, 1000); // Update PNL shortly after opening
   };
   
   // Get trader emotion emoji with enhanced states
@@ -1157,9 +1168,6 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       const isAtLatest = newStart >= chartData.length - 15;
       
       setFollowingLatest(isAtLatest);
-      if (!isAtLatest) {
-        setLastKnownRange({ start: newStart, end: newEnd });
-      }
       
       return {
         start: newStart,
@@ -1183,7 +1191,6 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       const newStart = Math.max(0, prev.start - 15);
       const newEnd = newStart + 15;
       setFollowingLatest(false);
-      setLastKnownRange({ start: newStart, end: newEnd });
       return {
         start: newStart,
         end: newEnd
@@ -1208,12 +1215,25 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
   useEffect(() => {
     followingLatestRef.current = followingLatest;
   }, [followingLatest]);
+
+  // <-- ADDED: Keep timeElapsedRef updated -->
+  useEffect(() => {
+    timeElapsedRef.current = timeElapsed;
+  }, [timeElapsed]);
+  // <-- END ADDED -->
   
   // Add reset game function
   const resetGame = () => {
+    // Clear the interval first
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
     // Reset all game states
     setIsGameOver(false);
     setTimeElapsed(0);
+    timeElapsedRef.current = 0; // Reset ref too
     setPosition(null);
     setEntryPrice(null);
     setPnl(0);
@@ -1225,10 +1245,12 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
     setEmotion('neutral');
     setLeverage(1);
     setLiquidationPrice(null);
+    setInitialMargin(0); // Reset initial margin
     setVisibleRange({ start: 0, end: 15 });
     setChartZoom(1);
     setChartOffset(0);
     setFollowingLatest(true);
+    followingLatestRef.current = true; // Reset ref too
     
     // Reset liquidation state
     setIsLiquidated(false);
@@ -1266,7 +1288,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
 
       {/* Render GameHeader component */}
       <GameHeader
-        selectedCharacter={selectedCharacter}
+        character={selectedCharacter}
         walletBalance={walletBalance}
         totalPnl={totalPnl}
         timeElapsed={timeElapsed}

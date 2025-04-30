@@ -1,8 +1,21 @@
 import React from 'react';
 
+// Import character images
+import StoicImg from '../assets/Characters/Stoic.png';
+import NervousNewbieImg from '../assets/Characters/NervousNewbie.png';
+import FullDegenImg from '../assets/Characters/FullDegen.png';
+
+// Map character names to images
+const characterImages = {
+  Stoic: StoicImg,
+  NervousNewbie: NervousNewbieImg,
+  FullDegen: FullDegenImg,
+};
+
+
 // Define the props the component will accept
 const GameHeader = ({
-  selectedCharacter,
+  character, // Changed from selectedCharacterName as per task mandate
   walletBalance,
   totalPnl,
   timeElapsed,
@@ -17,24 +30,27 @@ const GameHeader = ({
         {/* Left Column: Trader Info + Sanity */}
         <div className="flex flex-col gap-2">
           <div className="trader-box">
+            {/* Display selected character image and name */}
             <div className="flex gap-2 items-center">
-              {/* Display selected character emoji and name */}
-              {selectedCharacter ? (
+              {character && characterImages[character] ? ( // Check if character string exists and has a matching image
                 <>
-                  {/* Use selected character's emoji */}
-                  <span className="text-4xl">{selectedCharacter.emoji}</span>
+                  <img
+                    src={characterImages[character]} // Use character string directly for image lookup
+                    alt={character} // Use character string directly for alt text
+                    className="w-12 h-12 object-contain pixelated"
+                  />
                   <div>
-                    {/* Use selected character's name */}
-                    <div className="trader-title">{selectedCharacter.name}</div>
+                    {/* Display the character string directly */}
+                    <div className="trader-title">{character}</div>
                   </div>
                 </>
               ) : (
-                // Basic fallback if needed, though selectedCharacter should always exist here
-                <div>Loading...</div>
+                // Fallback if character prop is falsy or doesn't match image map
+                <div>No Character</div>
               )}
             </div>
           </div>
-          {/* Sanity Container (Moved Here) */}
+          {/* Sanity Container */}
           <div className="sanity-container"> {/* Removed fixed width */}
             <div className="flex items-center gap-1">
               <span className="brain-icon">🧠</span> {/* Note: brain-icon class defined in InteractiveTradingPreview CSS */}

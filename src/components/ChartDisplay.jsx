@@ -19,9 +19,6 @@ const ChartDisplay = forwardRef(({
   handleMouseDown,
   handleMouseMove,
   handleMouseUp,
-  handleScroll,
-  goToPast,
-  goToPresent,
   handleZoom,
   getPricePosition, // Needed for rendering lines/candles
   // Props for mobile controls toggle
@@ -94,23 +91,7 @@ const ChartDisplay = forwardRef(({
            ref={ref} // Apply the forwarded ref here
            onMouseDown={handleMouseDown}
            onMouseMove={handleMouseMove}
-           onMouseUp={handleMouseUp}
-           onWheel={handleScroll}>
-        {/* Navigation arrows */}
-        <div className="absolute top-2 left-2 z-10 flex gap-1">
-          <button
-            className="pixel-button w-8 h-8 flex items-center justify-center text-lg"
-            onClick={goToPast}
-          >
-            ←
-          </button>
-          <button
-            className="pixel-button w-8 h-8 flex items-center justify-center text-lg"
-            onClick={goToPresent}
-          >
-            →
-          </button>
-        </div>
+           onMouseUp={handleMouseUp}>
 
         {/* Zoom controls */}
         <div className="absolute top-2 right-2 z-10 flex flex-col gap-1">
