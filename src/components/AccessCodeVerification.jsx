@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient'; // Import the Supabase client
+import BackgroundGif from '../assets/background/SBP.gif'; // Import the background GIF
 
 function AccessCodeVerification({ onVerificationSuccess }) { // Accept prop
   const [accessCode, setAccessCode] = useState('');
@@ -42,8 +43,14 @@ function AccessCodeVerification({ onVerificationSuccess }) { // Accept prop
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <div className="pixel-container w-full max-w-sm">
+    <div
+      className="flex flex-col items-center justify-center min-h-screen p-4 bg-cover bg-center bg-no-repeat relative"
+      style={{ backgroundImage: `url(${BackgroundGif})` }}
+    >
+      {/* Overlay div for darkening */}
+      <div className="absolute inset-0 bg-black opacity-50"></div>
+      {/* Content */}
+      <div className="relative z-10 pixel-container w-full max-w-sm">
         <h2 className="pixel-header text-center">Enter Access Code</h2>
         <div className="mb-4">
           <label htmlFor="accessCode" className="block mb-1 font-['VT323'] text-[var(--pixel-text)]">

@@ -1,12 +1,10 @@
 import React from 'react';
-
 const TradingPanel = ({
   position, // To disable leverage slider
   walletBalance,
   leverage,
   setLeverage, // Callback to update leverage
   heartRate,
-  getTraderEmoji, // Function to get the dynamic emoji display
   showMobileControls, // To handle mobile visibility
 }) => {
   return (
@@ -82,10 +80,14 @@ const TradingPanel = ({
           </div>
         </div>
 
-        {/* Trader emotion */}
+        {/* Trader emotion - Reverted */}
         <div className="p-2 flex items-center justify-center bg-black border-2 border-[#00ff00] mb-4">
-          <div className="w-24 h-24">
-            {getTraderEmoji()} {/* Use getTraderEmoji prop */}
+          {/* Original structure based on mandate, adapted slightly */}
+          <div className="flex gap-2 items-center">
+            <span className="text-4xl">😐</span> {/* Static Emoji */}
+            <div>
+              <div className="trader-title">Stoic</div> {/* Static Title */}
+            </div>
           </div>
         </div>
       </div>

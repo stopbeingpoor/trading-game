@@ -1,6 +1,6 @@
 # Project Context
 
-**Last Updated:** 2025-04-30 10:35:35 PM AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
+**Last Updated:** 2025-04-30 11:24:00 PM AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
 
 ---
 
@@ -8,7 +8,7 @@
 > [Enhance project documentation by making the Game Design Document more comprehensive and elegant.]
 
 ## Overall Status Summary
-[The Game Design Document (GDD.md) has been made more comprehensive and elegant, incorporating detailed information about gameplay mechanics, UI, art, and technical aspects based on the code analysis. The memory bank now provides a more complete picture of the project. The unused Firebase dependency has been successfully removed.]
+[The Game Design Document (GDD.md) has been made more comprehensive and elegant. The memory bank provides a more complete picture of the project. The unused Firebase dependency was removed. The requested background GIF has been applied and darkened on the Access Code, Start Game, and Character Select pages. Character selection and the main game screen now use dynamic character images instead of emojis.]
 
 ---
 
@@ -25,6 +25,8 @@
 2.  [ ] [TASK-007] Explore Supabase-specific files (e.g., Edge Functions code, migration files) to gather more detailed backend information for the memory bank.
 
 ## Recently Completed (Done)
+- [x] [TASK-UI-002] Darken background GIF on Access Code, Start Game, and Character Select pages. - *(Completed: 2025-04-30)*
+- [x] [TASK-UI-001] Apply background GIF to Access Code, Start Game, and Character Select pages. - *(Completed: 2025-04-30)*
 - [x] [TASK-INIT-001] Create memory-bank/ProjectAndProduct.md. - *(Completed: 2025-04-30)*
 - [x] [TASK-INIT-002] Create memory-bank/DesignAndTech.md. - *(Completed: 2025-04-30)*
 - [x] [TASK-001] Create and populate memory-bank/context.md. - *(Completed: 2025-04-30)*
@@ -36,9 +38,15 @@
 - [x] [TASK-UPDATE-GDD-COMPREHENSIVE] Make Game Design Document more comprehensive and elegant. - *(Completed: 2025-04-30)*
 - [x] [TASK-005] Investigate and remove the usage of the 'firebase' dependency. - *(Completed: 2025-04-30)*
 
+- [x] [TASK-UI-003] Replace character emojis with images in CharacterSelect.jsx and TradingPanel.jsx. - *(Completed: 2025-04-30)*
+- [x] [BUG-001] Fix ReferenceError: Cannot access 'updateChart' before initialization in InteractiveTradingPreview.jsx. - *(Completed: 2025-05-01)*
+- [x] [BUG-002] Fix ReferenceError: Cannot access 'setCurrentPrice' before initialization in InteractiveTradingPreview.jsx. - *(Completed: 2025-05-01)*
 ---
 
 ## Key Decisions / Learnings (Recent/Tactical)
+- Replaced static emojis with dynamic character images in CharacterSelect.jsx and TradingPanel.jsx for improved visual representation. *(2025-04-30)*
+- Added a semi-transparent black overlay div to the background containers to darken the background GIF as requested by the user. *(2025-04-30)*
+- Applied background GIF using inline styles and Tailwind CSS to relevant page components (`App.jsx`, `AccessCodeVerification.jsx`, `CharacterSelect.jsx`). *(2025-04-30)*
 - Decided to use Supabase for backend services to accelerate development. *(2025-04-30)*
 - Confirmed use of React, Supabase client, and Supabase Edge Functions for access code verification. *(2025-04-30)*
 - Noted the presence of an unexplained 'firebase' dependency. *(2025-04-30)*
@@ -47,3 +55,4 @@
 - Understood the basic structure and interaction of frontend components. *(2025-04-30)*
 - Successfully updated GDD.md with detailed gameplay, UI, art, and technical information. *(2025-04-30)*
 - Removed the unused 'firebase' dependency from the project. *(2025-04-30)*
+- Resolved 'setCurrentPrice' initialization error by moving useState declarations before the useCallback hook that uses them in InteractiveTradingPreview.jsx. *(2025-05-01)*
