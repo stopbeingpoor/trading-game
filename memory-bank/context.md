@@ -7,6 +7,7 @@
 ## Frontend
 - **Current Focus:** Implementing the core game mechanics and UI components as specified in the GDD and PRD. This includes the real-time chart simulation, PNL calculation, leverage application, liquidation logic, timer, Sanity Meter, Heart Rate, and the various screens and panels.
 - **Recent Changes:**
+    - Updated styling of `src/components/AccessCodeVerification.jsx` to match the game's retro aesthetic (pixel art styles, fonts, colors) (2025-04-30).
     - Integrated `src/components/AccessCodeVerification.jsx` with the `verify-access-code` Supabase Edge Function (2025-04-30).
     - Created `src/supabaseClient.js` for Supabase client initialization (2025-04-30).
     - Memory Bank updated with detailed information from `Project Documentation/GDD.md` and `Project Documentation/PRD.md` (2025-04-30).
@@ -14,7 +15,7 @@
     - Moved Supabase credentials from `src/supabaseClient.js` to `.env` file and updated client to use `import.meta.env` (VITE_ prefix required) (2025-04-30).
     - Added `.env` to `.gitignore` (2025-04-30).
 - **Known Issues:** The actual implementation of the complex game mechanics (chart data generation/simulation, precise PNL/liquidation calculation logic, Sanity/Heart Rate dynamics) within the React components is the primary remaining task for the MVP. Integration of the `firebase` dependency is not defined for the MVP.
-- **Patterns & Decisions:** Continued use of React functional components and hooks. Component structure follows UI breakdown. Styling via Tailwind CSS and custom CSS. State management primarily local, with top-level state (`isVerified`) managed in `main.jsx` controlling the initial application view (Verification vs. App). Viewport scaling via `GameViewportScaler`. Supabase client initialized in a dedicated utility file (`src/supabaseClient.js`), reading credentials securely from environment variables (`.env` via `import.meta.env`). Supabase Edge Functions invoked for specific backend interactions.
+- **Patterns & Decisions:** Continued use of React functional components and hooks. Component structure follows UI breakdown. Styling via Tailwind CSS and custom CSS (`src/index.css` defines core retro theme). State management primarily local, with top-level state (`isVerified`) managed in `main.jsx` controlling the initial application view (Verification vs. App). Viewport scaling via `GameViewportScaler`. Supabase client initialized in a dedicated utility file (`src/supabaseClient.js`), reading credentials securely from environment variables (`.env` via `import.meta.env`). Supabase Edge Functions invoked for specific backend interactions.
 - **Next Steps:**
     1.  Implement the real-time candlestick chart data simulation and rendering logic in `ChartDisplay.jsx`.
     2.  Develop the core trading logic in `InteractiveTradingPreview.jsx`, including handling BUY/SELL/CLOSE actions, calculating real-time PNL, applying leverage, and managing the wallet balance.

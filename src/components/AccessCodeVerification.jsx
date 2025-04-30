@@ -42,11 +42,11 @@ function AccessCodeVerification({ onVerificationSuccess }) { // Accept prop
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-sm">
-        <h2 className="text-2xl font-bold mb-6 text-center">Enter Access Code</h2>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="pixel-container w-full max-w-sm">
+        <h2 className="pixel-header text-center">Enter Access Code</h2>
         <div className="mb-4">
-          <label htmlFor="accessCode" className="block text-sm font-medium text-gray-400 mb-1">
+          <label htmlFor="accessCode" className="block mb-1 font-['VT323'] text-[var(--pixel-text)]">
             Access Code
           </label>
           <input
@@ -55,23 +55,19 @@ function AccessCodeVerification({ onVerificationSuccess }) { // Accept prop
             value={accessCode}
             onChange={(e) => setAccessCode(e.target.value)}
             placeholder="Enter your code"
-            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-500"
+            className="w-full px-3 py-2 bg-[var(--pixel-bg-light)] border-2 border-[var(--pixel-border)] text-[var(--pixel-text)] placeholder:text-gray-500 focus:outline-none focus:border-[var(--pixel-accent)] font-['VT323']"
             disabled={isLoading}
           />
         </div>
         <button
           onClick={handleVerify}
-          className={`w-full py-2 px-4 rounded-md font-semibold transition-colors ${
-            isLoading
-              ? 'bg-gray-600 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800'
-          }`}
+          className="pixel-button w-full"
           disabled={isLoading}
         >
           {isLoading ? 'Verifying...' : 'Verify Code'}
         </button>
         {message && (
-          <p className={`mt-4 text-center text-sm ${message.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}>
+          <p className={`mt-4 text-center text-sm font-['VT323'] ${message.startsWith('Error') ? 'text-[var(--pixel-secondary)]' : 'text-[var(--pixel-primary)]'}`}>
             {message}
           </p>
         )}
