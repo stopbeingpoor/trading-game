@@ -32,16 +32,16 @@ const GameHeader = ({
           <div className="trader-box">
             {/* Display selected character image and name */}
             <div className="flex gap-2 items-center">
-              {character && characterImages[character] ? ( // Check if character string exists and has a matching image
+              {character && character.name && characterImages[character.name] ? ( // Check if character object and name exist and has a matching image
                 <>
                   <img
-                    src={characterImages[character]} // Use character string directly for image lookup
-                    alt={character} // Use character string directly for alt text
+                    src={characterImages[character.name]} // Use character name for image lookup
+                    alt={character.name} // Use character name for alt text
                     className="w-12 h-12 object-contain pixelated"
                   />
                   <div>
-                    {/* Display the character string directly */}
-                    <div className="trader-title">{character}</div>
+                    {/* Display the character name */}
+                    <div className="trader-title">{character.name}</div>
                   </div>
                 </>
               ) : (

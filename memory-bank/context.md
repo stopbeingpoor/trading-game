@@ -1,6 +1,6 @@
 # Project Context
 
-**Last Updated:** 2025-04-30 11:24:00 PM AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
+**Last Updated:** 2025-05-01 02:37:00 AM AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
 
 ---
 
@@ -37,10 +37,11 @@
 - [x] [TASK-UPDATE-D&T-COMPREHENSIVE] Update memory-bank/DesignAndTech.md with comprehensive frontend details. - *(Completed: 2025-04-30)*
 - [x] [TASK-UPDATE-GDD-COMPREHENSIVE] Make Game Design Document more comprehensive and elegant. - *(Completed: 2025-04-30)*
 - [x] [TASK-005] Investigate and remove the usage of the 'firebase' dependency. - *(Completed: 2025-04-30)*
-
 - [x] [TASK-UI-003] Replace character emojis with images in CharacterSelect.jsx and TradingPanel.jsx. - *(Completed: 2025-04-30)*
 - [x] [BUG-001] Fix ReferenceError: Cannot access 'updateChart' before initialization in InteractiveTradingPreview.jsx. - *(Completed: 2025-05-01)*
 - [x] [BUG-002] Fix ReferenceError: Cannot access 'setCurrentPrice' before initialization in InteractiveTradingPreview.jsx. - *(Completed: 2025-05-01)*
+- [x] [TASK-UI-004] Enhance profit and loss animations to display P&L amount. - *(Completed: 2025-05-01)*
+
 ---
 
 ## Key Decisions / Learnings (Recent/Tactical)
@@ -56,3 +57,4 @@
 - Successfully updated GDD.md with detailed gameplay, UI, art, and technical information. *(2025-04-30)*
 - Removed the unused 'firebase' dependency from the project. *(2025-04-30)*
 - Resolved 'setCurrentPrice' initialization error by moving useState declarations before the useCallback hook that uses them in InteractiveTradingPreview.jsx. *(2025-05-01)*
+- Added P&L amount display to both the green (profit) and red (loss) screen flash animations when a user closes a position, using CSS animations and component props, and ensured the correct P&L value is passed during the animation. *(2025-05-01)*

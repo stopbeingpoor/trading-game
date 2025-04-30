@@ -3,6 +3,7 @@ import InteractiveTradingPreview from './components/InteractiveTradingPreview';
 import GameViewportScaler from './components/GameViewportScaler'; // Import the scaler
 import CharacterSelect from './components/CharacterSelect'; // Import the new component
 import BackgroundGif from './assets/background/SBP.gif'; // Import the background GIF
+import Logo from './assets/SBP LOGO.png'; // Import the logo
 import './App.css';
 
 // Define game states
@@ -45,8 +46,9 @@ function App() {
             {/* Overlay div for darkening */}
             <div className="absolute inset-0 bg-black opacity-50"></div>
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center">
-              <h1 className="text-4xl font-['Press_Start_2P'] mb-8">STOP BEING POOR</h1>
+            <div className="start-screen-content relative z-10 flex flex-col items-center justify-center">
+              <img src={Logo} alt="SBP Logo" className="mb-4 w-3/4 max-w-sm" /> {/* Add the logo */}
+              <h1 className="text-4xl font-['Press_Start_2P'] mb-8 text-center">STOP BEING POOR</h1>
               <button
                 onClick={handleStartGame}
                 className="pixel-button bg-[#00ff00] text-black hover:bg-[#00cc00] px-8 py-4 text-xl font-['Press_Start_2P']"

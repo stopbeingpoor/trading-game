@@ -465,7 +465,7 @@ const [chartData, setChartData] = useState([]);
       if (data.length === 0) return generateInitialData(); // Should ideally not happen if timer starts after init
       
       const lastCandle = data[data.length - 1];
-      const open = lastCandle.close;
+      const open = Number.isFinite(lastCandle.close) ? lastCandle.close : (data[data.length - 2]?.close ?? 5000); // Fallback to previous close or default
       
       // Get recent price movement (still using relative for momentum calculation)
       const recentCandles = data.slice(-5);
@@ -481,7 +481,7 @@ const [chartData, setChartData] = useState([]);
       const currentATR = calculateATR(data, atrPeriod);
       
       // Use ATR directly as volatility in points, fallback if not available
-      let volatility = currentATR ?? 20; // Use calculated ATR in points, or default 20 points
+      let volatility = Number.isFinite(currentATR) ? currentATR : 20; // Use calculated ATR in points, or default 20 points if ATR is NaN/Infinity
       
       // 3% chance of extreme move
       const isExtremeMove = Math.random() < 0.03;
@@ -596,6 +596,7 @@ const [chartData, setChartData] = useState([]);
   const [showLiquidationAnimation, setShowLiquidationAnimation] = useState(false);
   const [showProfitAnimation, setShowProfitAnimation] = useState(false); // State for profit animation
   const [showLossAnimation, setShowLossAnimation] = useState(false); // State for loss animation
+  const [animationPnl, setAnimationPnl] = useState(0); // State to hold PNL for animation
   const [initialMargin, setInitialMargin] = useState(0); // <-- ADDED: Store margin at trade entry
 
   const chartRef = useRef(null);
@@ -805,18 +806,27 @@ const [chartData, setChartData] = useState([]);
     const latestPrice = currentPrice;
     const finalPnl = pnl; // Use the last calculated PNL state
 
+    // Set PNL for animation display
+    setAnimationPnl(finalPnl);
+
     // Trigger profit/loss animations
     if (finalPnl > 0) {
       setShowProfitAnimation(true);
-      setTimeout(() => setShowProfitAnimation(false), 800); // Duration matches CSS animation
+      setTimeout(() => {
+        setShowProfitAnimation(false);
+        setAnimationPnl(0); // Reset animation PNL after animation
+      }, 800); // Duration matches CSS animation
     } else if (finalPnl < 0) {
       setShowLossAnimation(true);
-      setTimeout(() => setShowLossAnimation(false), 800); // Duration matches CSS animation
+      setTimeout(() => {
+        setShowLossAnimation(false);
+        setAnimationPnl(0); // Reset animation PNL after animation
+      }, 800); // Duration matches CSS animation
     }
     
     // Add to trade history
     setTradeHistory(prev => [
-      ...prev, 
+      ...prev,
       {
         type: position,
         entry: entryPrice,
@@ -832,7 +842,7 @@ const [chartData, setChartData] = useState([]);
     // Reset position state
     setPosition(null);
     setEntryPrice(null);
-    setPnl(0);
+    setPnl(0); // Reset PNL state after capturing finalPnl
     setInitialMargin(0); // Reset initial margin
     setLiquidationPrice(null); // Clear liquidation price
     
@@ -966,9 +976,9 @@ const [chartData, setChartData] = useState([]);
     setHeartRate(prev => Math.min(200, prev + 15));
     // Sanity decline based on trading type and game over check
     let decrement = 0;
-    if (selectedCharacter.name === 'Stoic') decrement = 0.5;
-    else if (selectedCharacter.name === 'Nervous Newbie') decrement = 1;
-    else if (selectedCharacter.name === 'Full Degen') decrement = 1.5;
+    if (selectedCharacter.name === 'Stoic') decrement = 1;
+    else if (selectedCharacter.name === 'Nervous Newbie') decrement = 1.5;
+    else if (selectedCharacter.name === 'Full Degen') decrement = 2;
 
     setSanity(prevSanity => {
       const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
@@ -1025,9 +1035,9 @@ const [chartData, setChartData] = useState([]);
     setHeartRate(prev => Math.min(200, prev + 15));
     // Sanity decline based on trading type and game over check
     let decrement = 0;
-    if (selectedCharacter.name === 'Stoic') decrement = 0.5;
-    else if (selectedCharacter.name === 'Nervous Newbie') decrement = 1;
-    else if (selectedCharacter.name === 'Full Degen') decrement = 1.5;
+    if (selectedCharacter.name === 'Stoic') decrement = 1;
+    else if (selectedCharacter.name === 'Nervous Newbie') decrement = 1.5;
+    else if (selectedCharacter.name === 'Full Degen') decrement = 2;
 
     setSanity(prevSanity => {
       const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
@@ -1284,6 +1294,7 @@ const [chartData, setChartData] = useState([]);
         showProfitAnimation={showProfitAnimation}
         showLossAnimation={showLossAnimation}
         showLiquidationAnimation={showLiquidationAnimation}
+        pnlAmount={animationPnl} // Pass the animation PNL state
       />
 
       {/* Render GameHeader component */}

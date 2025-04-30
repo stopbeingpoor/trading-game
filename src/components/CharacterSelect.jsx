@@ -25,7 +25,7 @@ const CharacterSelect = ({ onCharacterSelect }) => { // Renamed prop
           {characters.map((char) => (
             <button
               key={char.name}
-              onClick={() => onCharacterSelect(char.name)} // Pass only the character name
+              onClick={() => onCharacterSelect(char)} // Pass the full character object
               className="pixel-button flex flex-col items-center p-6 bg-[#111] border-2 border-[#00ff00] hover:bg-[#222] hover:border-[#33ff33] transition-all duration-200"
               style={{ minWidth: '150px' }} // Ensure buttons have some minimum width
             >

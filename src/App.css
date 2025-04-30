@@ -76,3 +76,30 @@
 .animation-overlay.animate-loss-screen {
   animation: lossScreenShakeAndFlash 0.8s ease-out forwards;
 }
+
+/* PNL Text Animation */
+@keyframes pnlTextAnimation {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+/* Pulse animation for the Start Game button */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.start-screen-content .pixel-button {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+

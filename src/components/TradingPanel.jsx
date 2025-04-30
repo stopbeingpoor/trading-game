@@ -79,17 +79,6 @@ const TradingPanel = ({
             <span className="heart-rate-value">{heartRate}</span>
           </div>
         </div>
-
-        {/* Trader emotion - Reverted */}
-        <div className="p-2 flex items-center justify-center bg-black border-2 border-[#00ff00] mb-4">
-          {/* Original structure based on mandate, adapted slightly */}
-          <div className="flex gap-2 items-center">
-            <span className="text-4xl">😐</span> {/* Static Emoji */}
-            <div>
-              <div className="trader-title">Stoic</div> {/* Static Title */}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
