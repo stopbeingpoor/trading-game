@@ -140,6 +140,17 @@ graph TD
 * **Features:** [Displays candlestick data, entry price line, supports zooming, panning, and scrolling.]
 * **Styling:** [Custom CSS is used to style the SVG elements, including candlestick colors and grid lines, consistent with the pixel art theme.]
 
+#### 6.2.1. Candle Generation Mechanism
+*   **Source:** The candle data is generated procedurally within the `src/components/InteractiveTradingPreview.jsx` component, not fetched from an external source or purely random.
+*   **Initial Generation (`generateInitialData`):** Creates 100 historical candles using factors like a starting price, momentum, volatility (influenced by trend strength), random fluctuations, a 3% chance of extreme market moves (crashes/pumps), and mean reversion above a certain price threshold (9500 points).
+*   **Live Updates (`updateChart`):** Every second, a new candle is generated based on the previous one. It uses:
+   *   Calculated momentum (from recent price changes).
+   *   Volatility derived from the Average True Range (ATR) of the last 14 candles.
+   *   Simulated Support and Resistance levels (highest high/lowest low over 50 candles) that apply counter-pressure when the price approaches them.
+   *   Random fluctuations scaled by ATR volatility.
+   *   The same 3% chance of extreme moves and mean reversion logic as the initial generation.
+*   **Conclusion:** The chart simulates market dynamics rather than being purely random.
+
 ### 6.3. Testing Strategy
 * **Unit Tests:** [Not yet defined.]
 * **Integration Tests:** [Not yet defined.]
