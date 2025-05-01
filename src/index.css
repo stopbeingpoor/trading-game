@@ -284,30 +284,44 @@ body {
 }
 
 /* Range input styling */
+/* Base range input - keep appearance none */
 input[type="range"] {
   -webkit-appearance: none;
-  height: 8px;
-  background: var(--pixel-bg);
-  border: 2px solid var(--pixel-text);
-  box-shadow: inset 0 0 0 2px #000;
+  /* Default height/bg/border removed, will be handled by specific classes like .retro-slider */
+  width: 100%; /* Ensure it takes full width */
+  margin: 0; /* Remove default margins */
+  padding: 0; /* Remove default padding */
 }
 
+/* Specific styling for our retro slider - REMOVED */
+
+/* Default thumb style (can be overridden) */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  background: var(--pixel-accent);
+  background: var(--pixel-accent); /* Default cyan */
   border: 2px solid #000;
   cursor: pointer;
+  margin-top: -4px; /* Adjust vertical alignment if needed based on track height */
 }
 
+/* Default thumb style (Mozilla) */
 input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
-  background: var(--pixel-accent);
+  background: var(--pixel-accent); /* Default cyan */
   border: 2px solid #000;
   cursor: pointer;
+  border-radius: 0; /* Ensure sharp edges */
 }
+/* Custom gradient for the leverage slider track - REMOVED */
+
+/* Specific thumb style for the retro slider - REMOVED */
+
+/* Specific thumb style for the retro slider (Mozilla) - REMOVED */
+
+/* Custom gradient for the leverage slider track (Mozilla) - REMOVED */
 
 /* Progress bar styling */
 .pixel-progress {
@@ -738,46 +752,46 @@ input[type="range"]::-moz-range-thumb {
   text-shadow: 0 0 3px currentColor;
 }
 
-.sanity-bar {
-  width: 100%;
-  height: 8px;
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 2px;
-  margin-top: 0.4rem;
-  overflow: hidden;
-  display: flex;
-  gap: 2px;
-  padding: 1px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
-}
+        /* --- Sanity Bar Redesign --- */
+        .sanity-bar {
+          width: 100%;
+          height: 16px; /* Adjusted height for block appearance */
+          background: transparent; /* No background for the container itself */
+          border: none; /* Remove container border */
+          margin-top: 0.4rem;
+          display: flex;
+          gap: 3px; /* Spacing between segments */
+          padding: 0; /* No padding needed */
+          box-shadow: none; /* Remove inset shadow */
+        }
 
-.sanity-segment {
-  flex: 1;
-  height: 100%;
-  background: #222;
-  transition: all 0.2s ease;
-  position: relative;
-  border: 1px solid #333;
-}
+        .sanity-segment {
+          flex: 1;
+          height: 100%;
+          background: #333; /* Default background for empty segments */
+          border: 1px solid #555; /* Border for each segment */
+          transition: background-color 0.2s ease, border-color 0.2s ease; /* Smooth color transition */
+          /* Removed position: relative as ::after is not used */
+        }
 
-.sanity-segment.filled {
-  background: linear-gradient(180deg, #00ff00, #00cc00);
-  box-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
-  border-color: #00ff00;
-}
+        .sanity-segment.filled {
+          background-color: #00ff00; /* Solid green */
+          border-color: #00cc00; /* Slightly darker border */
+          box-shadow: none; /* Remove shadow */
+        }
 
-.sanity-segment.warning {
-  background: linear-gradient(180deg, #ffcc00, #cc9900);
-  box-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
-  border-color: #ffcc00;
-}
+        .sanity-segment.warning {
+          background-color: #ffcc00; /* Solid yellow */
+          border-color: #cc9900; /* Slightly darker border */
+          box-shadow: none; /* Remove shadow */
+        }
 
-.sanity-segment.danger {
-  background: linear-gradient(180deg, #ff3333, #cc0000);
-  box-shadow: 0 0 5px rgba(255, 51, 51, 0.5);
-  border-color: #ff3333;
-}
+        .sanity-segment.danger {
+          background-color: #ff3333; /* Solid red */
+          border-color: #cc0000; /* Slightly darker border */
+          box-shadow: none; /* Remove shadow */
+        }
+        /* --- End Sanity Bar Redesign --- */
 
 @media (max-width: 640px) {
   .trader-box {
@@ -964,4 +978,88 @@ input[type="range"]::-moz-range-thumb {
   background-image: 
     linear-gradient(90deg, rgba(255, 204, 0, 0.1) 1px, transparent 1px),
     linear-gradient(180deg, rgba(255, 204, 0, 0.1) 1px, transparent 1px);
+}
+
+/* Apply gradient and style to the container - REMOVED */
+/* .cyber-slider-container { ... } */
+
+/* Reverted Redesign Attempt */
+
+/* Leverage Slider - Gradient Track Attempt */
+
+/* Ensure base slider is transparent */
+input[type="range"].retro-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 16px; /* Height to comfortably contain thumb */
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* Gradient Track */
+input[type="range"].retro-slider::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 16px;
+  background: linear-gradient(to right, var(--pixel-primary), var(--pixel-yellow), var(--pixel-orange), var(--pixel-secondary));
+  border: 2px solid #000;
+  border-radius: 0px;
+}
+
+input[type="range"].retro-slider::-moz-range-track {
+  appearance: none;
+  height: 16px;
+  background: linear-gradient(to right, var(--pixel-primary), var(--pixel-yellow), var(--pixel-orange), var(--pixel-secondary));
+  border: 2px solid #000;
+  border-radius: 0px;
+}
+
+/* White Square Thumb */
+input[type="range"].retro-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0px;
+  cursor: pointer;
+  margin-top: -2px; /* (Track Border 2*2 + Track Height 16 = 20 total height). (Thumb Height 16 - 20) / 2 = -2. Negative margin needed. */
+}
+
+input[type="range"].retro-slider::-moz-range-thumb {
+  appearance: none;
+  width: 16px; /* Size includes border */
+  height: 16px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0px;
+  cursor: pointer;
+}
+
+/* Hover state for White Square Thumb (to prevent glitch) */
+input[type="range"].retro-slider::-webkit-slider-thumb:hover {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0px;
+  cursor: pointer;
+  margin-top: -2px; /* Keep consistent with default */
+}
+
+input[type="range"].retro-slider::-moz-range-thumb:hover {
+  appearance: none;
+  width: 16px; /* Size includes border */
+  height: 16px;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0px;
+  cursor: pointer;
 }

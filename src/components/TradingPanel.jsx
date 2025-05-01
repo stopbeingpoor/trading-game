@@ -1,7 +1,6 @@
 import React from 'react';
 const TradingPanel = ({
   position, // To disable leverage slider
-  walletBalance,
   leverage,
   setLeverage, // Callback to update leverage
   heartRate,
@@ -14,17 +13,6 @@ const TradingPanel = ({
       {/* Reverted overflow/height changes, kept reduced padding */}
       <div className="pixel-container p-0.5 sm:p-2">
         <h3 className="text-sm sm:text-base font-bold mb-1 sm:mb-2">TRADING SETTINGS</h3> {/* Adjusted text size/margin */}
-
-        {/* Position Size Display (Full Wallet Balance) */}
-        <div className="mb-3">
-          <div className="cyber-slider-container">
-            {/* Added flex-wrap to allow label and value to stack on small screens */}
-            <div className="flex justify-between flex-wrap mb-1">
-              <span className="slider-label status-label">Position Size:</span>
-              <span className="slider-value status-label">${walletBalance.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-            </div>
-          </div>
-        </div>
 
         {/* Leverage Control - Reduced bottom margin on smallest screens */}
         <div className="mb-1 sm:mb-3">
@@ -50,12 +38,7 @@ const TradingPanel = ({
               className="retro-slider w-full"
               disabled={position !== null} // Use position prop
             />
-            {/* Added flex-wrap, removed top margin on smallest screens */}
-            <div className="flex justify-between flex-wrap mt-0 sm:mt-1">
-              <span className="status-label text-[10px] text-[#00ff00]">1x</span>
-              <span className="status-label text-[10px] text-[#ffcc00]">100x</span>
-              <span className="status-label text-[10px] text-[#ff3333]">1000x</span>
-            </div>
+            {/* Leverage value indicators removed */}
           </div>
         </div>
       </div>

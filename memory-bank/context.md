@@ -1,6 +1,6 @@
 # Project Context
 
-**Last Updated:** 2025-05-01 13:13:00 AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
+**Last Updated:** 2025-05-01 14:38:00 AEST **Link to Full Kanban Board / Issue Tracker:** [URL_TO_JIRA_TRELLO_GITHUB_PROJECT_ETC]
 
 ---
 
@@ -8,7 +8,7 @@
 > [Refine game balance by adjusting volatility impact and price floor.]
 
 ## Overall Status Summary
-[The Game Design Document (GDD.md) has been made more comprehensive and elegant. The memory bank provides a more complete picture of the project, including detailed implementation logic for the Sanity mechanic. The unused Firebase dependency was removed. The requested background GIF has been applied and darkened on the Access Code, Start Game, and Character Select pages. Character selection and the main game screen now use dynamic character images instead of emojis. Fixed NaN errors in chart rendering. Adjusted PNL calculation to reduce volatility impact. Prevented price from hitting absolute zero. Sanity decrease rules have been adjusted. Fixed character display issue in the game header.]
+[The Game Design Document (GDD.md) has been made more comprehensive and elegant. The memory bank provides a more complete picture of the project, including detailed implementation logic for the Sanity mechanic. The unused Firebase dependency was removed. The requested background GIF has been applied and darkened on the Access Code, Start Game, and Character Select pages. Character selection and the main game screen now use dynamic character images instead of emojis. Fixed NaN errors in chart rendering. Adjusted PNL calculation to reduce volatility impact. Prevented price from hitting absolute zero. Sanity decrease rules have been adjusted. Fixed character display issue in the game header. Corrected the layout of the sanity bar in the game header and adjusted the sanity value font size. Removed the sanity number display from the game header. Updated the trading actions footer to display the dynamic wallet balance instead of static text. Attempted to style the leverage slider with a gradient track and white thumb directly via CSS.]
 
 ---
 
@@ -25,6 +25,11 @@
 2.  [ ] [TASK-007] Explore Supabase-specific files (e.g., Edge Functions code, migration files) to gather more detailed backend information for the memory bank.
 
 ## Recently Completed (Done)
+- [ ] [TASK-UI-014] Redesign leverage slider with new styling (gradient track, white thumb). - *(Status: In Progress - Applied CSS)*
+- [x] [TASK-UI-013] Updated TradingActions component to display dynamic wallet balance and leverage. - *(Completed: 2025-05-01)*
+- [x] [TASK-UI-012] Removed sanity number display from `GameHeader.jsx` as per mandate. - *(Completed: 2025-05-01)*
+- [x] [TASK-UI-011] Adjusted Sanity value font size to 10px in `GameHeader.jsx` via inline style. - *(Completed: 2025-05-01)*
+- [x] [TASK-UI-010] Corrected Sanity bar layout in `GameHeader.jsx` to align icon, bar, and number horizontally. - *(Completed: 2025-05-01)*
 - [x] [BUG-005] Fix character display in GameHeader for 'Nervous Newbie' and 'Full Degen'. - *(Completed: 2025-05-01)*
 - [x] [TASK-SANITY-001] Modified Sanity decrease logic in `InteractiveTradingPreview.jsx`: High Leverage/PNL Swing (Leverage > 10, PNL% > 5%, Decrease -0.3) and Closing Losing Position (Decrease -0.5). - *(Completed: 2025-05-01)*
 - [x] [TASK-BALANCE-002] Removed Sanity increase conditions from `InteractiveTradingPreview.jsx` as requested. - *(Completed: 2025-05-01)*
@@ -58,6 +63,10 @@
 ---
 
 ## Key Decisions / Learnings (Recent/Tactical)
+- Passed `walletBalance` prop from `InteractiveTradingPreview.jsx` to `TradingActions.jsx` to enable dynamic display. *(2025-05-01)*
+- Removed the span displaying the sanity value in `GameHeader.jsx` to comply with the latest feedback. *(2025-05-01)*
+- Set the font size of the sanity value in `GameHeader.jsx` to 10px using an inline style to meet user feedback requirements. *(2025-05-01)*
+- Restructured the `.sanity-container` in `GameHeader.jsx` using Tailwind flexbox (`flex items-center gap-x-2`) to achieve the mandated horizontal alignment of the brain icon, sanity bar, and sanity value. *(2025-05-01)*
 - Corrected keys in `characterImages` map within `GameHeader.jsx` to include spaces ('Nervous Newbie', 'Full Degen') matching the names passed from `CharacterSelect.jsx`, resolving the display issue. *(2025-05-01)*
 - Modified Sanity decrease rules in `InteractiveTradingPreview.jsx`: High Leverage/PNL Swing now triggers at Leverage > 10 & PNL% > 5% (was >50 & >10%) with a -0.3 decrease (was -0.15); Closing a losing position now causes a -0.5 decrease (was -0.3). *(2025-05-01)*
 - Modified Sanity mechanic: Removed conditions for sanity increase (positive PNL, profitable close). Sanity now only decreases or stays the same. *(2025-05-01)*
@@ -82,3 +91,8 @@
 - Understood the basic structure and interaction of frontend components. *(2025-04-30)*
 - Successfully updated GDD.md with detailed gameplay, UI, art, and technical information. *(2025-04-30)*
 - Removed the unused 'firebase' dependency from the project. *(2025-04-30)*
+- Applied a linear gradient background (green->yellow->orange->red) to the `.retro-slider` track pseudo-elements in `src/index.css` to style the leverage slider. *(2025-05-01)*
+- Hid the base `.retro-slider` background/border and restyled its thumb to a white square with a black border for better visual consistency with the gradient track. *(2025-05-01 - Note: Subsequent attempts reverted)*
+- Reverted attempt to apply pixelated gradient via `repeating-linear-gradient` to slider track due to visual errors. *(2025-05-01)*
+- Reverted attempt to apply gradient to slider container and make track transparent due to visual errors. *(2025-05-01)*
+- Applied CSS to style leverage slider track with a linear gradient (green->yellow->orange->red) and the thumb as a white square with black border. *(2025-05-01)*

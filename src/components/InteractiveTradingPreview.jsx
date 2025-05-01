@@ -647,7 +647,7 @@ const [chartData, setChartData] = useState([]);
       setTimeElapsed(newTime); // Update state for UI
 
       // Check for game over condition (time limit)
-      if (newTime >= 120) {
+      if (newTime >= 90) {
         setIsGameOver(true); // Update game over state
         if (intervalRef.current) {
           clearInterval(intervalRef.current); // Clear interval using ref
@@ -902,7 +902,7 @@ const [chartData, setChartData] = useState([]);
   
   // Format time
   const formatTime = (seconds) => {
-    const totalSeconds = 120; // 2 minutes game time
+    const totalSeconds = 90; // 1.5 minutes game time
     const remainingSeconds = Math.max(0, totalSeconds - seconds);
     const mins = Math.floor(remainingSeconds / 60);
     const secs = remainingSeconds % 60;
@@ -1374,6 +1374,7 @@ const [chartData, setChartData] = useState([]);
       {/* Render TradingActions component */}
       <TradingActions
         position={position}
+        walletBalance={walletBalance} // Pass walletBalance prop
         leverage={leverage}
         tradeHistory={tradeHistory}
         totalPnl={totalPnl}

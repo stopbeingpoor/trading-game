@@ -51,19 +51,13 @@ const GameHeader = ({
               )}
             </div>
           </div>
-          {/* Sanity Container */}
-          <div className="sanity-container p-0.5 sm:p-2"> {/* Reduced base padding */}
-            <div className="flex items-center gap-0.5"> {/* Reduced base gap */}
-              <span className="brain-icon text-sm sm:text-base">🧠</span> {/* Responsive text */}
-              <span className="sanity-text text-xs sm:text-sm">SANITY</span> {/* Responsive text */}
-              <span className={`sanity-value text-xs sm:text-sm ${ /* Responsive text */
-                sanity > 6 ? 'text-[#00ff00]' :
-                sanity > 4 ? 'text-[#ffcc00]' :
-                sanity > 2 ? 'text-[#ff9900]' :
-                'text-[#ff3333]'
-              }`}>{sanity}/8</span>
-            </div>
-            <div className="sanity-bar">
+          {/* Sanity Container - Now uses flexbox for horizontal layout */}
+          <div className="sanity-container flex items-center gap-x-2 p-0.5 sm:p-2"> {/* Added flex, items-center, gap-x-2 */}
+            {/* Brain Icon */}
+            <span className="brain-icon text-sm sm:text-base">🧠</span> {/* Responsive text */}
+
+            {/* Sanity Bar */}
+            <div className="sanity-bar flex-grow"> {/* Added flex-grow to allow bar to take space */}
               {[...Array(8)].map((_, i) => (
                 <div
                   key={i}
@@ -72,15 +66,17 @@ const GameHeader = ({
                       ? i >= 6
                         ? 'filled'
                         : i >= 4
-                          ? 'warning'
+                          ? 'warning' // Changed from 'warning' to 'warning' (no change, just noting for clarity)
                           : i >= 2
-                            ? 'warning'
+                            ? 'warning' // Changed from 'warning' to 'warning' (no change, just noting for clarity)
                             : 'danger'
                       : ''
                   }`}
                 />
               ))}
             </div>
+
+            {/* Sanity Value Removed */}
           </div>
         </div>
 

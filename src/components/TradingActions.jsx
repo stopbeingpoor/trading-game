@@ -3,6 +3,7 @@ import React from 'react';
 const TradingActions = ({
   position, // To disable buttons
   leverage,
+  walletBalance, // Added walletBalance prop
   tradeHistory,
   totalPnl,
   formatPnl, // Function passed from parent
@@ -19,7 +20,7 @@ const TradingActions = ({
         {/* Use smaller text on mobile */}
         <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
           <span className="text-sm sm:text-base opacity-70 mr-2">Trading:</span>
-          <span className="text-sm sm:text-base font-bold">Full Balance @ {leverage}x</span>
+          <span className="text-sm sm:text-base font-bold">{formatPnl(walletBalance)} @ {leverage}x</span>
         </div>
         <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
           <span className="text-sm sm:text-base opacity-70 mr-2">Trades:</span>
