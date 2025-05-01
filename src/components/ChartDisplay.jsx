@@ -21,9 +21,7 @@ const ChartDisplay = forwardRef(({
   handleMouseUp,
   handleZoom,
   getPricePosition, // Needed for rendering lines/candles
-  // Props for mobile controls toggle
-  showMobileControls,
-  toggleMobileControls,
+  // Removed props for mobile controls toggle: showMobileControls, toggleMobileControls
 }, ref) => { // Receive the ref from forwardRef
 
   return (
@@ -205,13 +203,7 @@ const ChartDisplay = forwardRef(({
         )}
       </div>
 
-      {/* Mobile toggle button */}
-      <button
-        className="md:hidden mt-2 pixel-button bg-[var(--pixel-accent)]"
-        onClick={toggleMobileControls}
-      >
-        {showMobileControls ? 'SHOW CHART' : 'SHOW CONTROLS'}
-      </button>
+      {/* Removed Mobile toggle button */}
     </div>
   );
 });

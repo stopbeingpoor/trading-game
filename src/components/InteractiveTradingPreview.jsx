@@ -269,6 +269,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         animation: heartbeat 1s infinite;
         color: #ff3333;
         text-shadow: 0 0 4px rgba(255, 51, 51, 0.8);
+        font-size: 1.5em; /* Increased size */
       }
 
       .leverage-warning {
@@ -282,6 +283,19 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         color: #00ff00;
         text-shadow: 0 0 4px rgba(0, 255, 0, 0.8);
       }
+
+      /* .heart-rate-monitor::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        background: linear-gradient(rgba(0, 255, 0, 0.1), rgba(0, 255, 0, 0.5), rgba(0, 255, 0, 0.1));
+        animation: scanline 3s infinite linear;
+        pointer-events: none;
+        z-index: 1;
+      } */
     `;
     document.head.appendChild(style);
     
@@ -298,7 +312,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
         return null;
     }
 
-    const pnlPerPoint = 10;
+    const pnlPerPoint = 5; // Reduced from 10 to decrease volatility impact
     // Liquidation occurs when loss = initialMargin
     // Loss = abs(pointDifference) * pnlPerPoint * leverageUsed
     // initialMargin = abs(pointDifference) * pnlPerPoint * leverageUsed
@@ -314,7 +328,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       liqPrice = entry + maxLossPoints;
     }
     // Clamp liquidation price within the 0-9999 range
-    return Math.max(0, liqPrice); // Remove 9999 clamp
+    return Math.max(0.1, liqPrice); // Clamp liquidation price slightly above 0
   };
 
   // Helper function to calculate True Range (Memoized)
@@ -425,7 +439,7 @@ const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selecte
       }
 
       // Remove the 9999 clamp, keep the 0 clamp
-      price = Math.max(0, potentialPrice);
+      price = Math.max(0.1, potentialPrice); // Clamp generated price slightly above 0
       
       // Generate more natural wicks
       // Generate wicks based on volatility (absolute points)
@@ -533,7 +547,7 @@ const [chartData, setChartData] = useState([]);
         potentialClose -= reversionAdjustment; // Apply downward pressure
       }
 
-      const close = Math.max(0, potentialClose); // Remove 9999 clamp, keep 0 clamp
+      const close = Math.max(0.1, potentialClose); // Clamp close price slightly above 0
       
       // Generate natural wicks based on volatility (absolute points)
       const wickVolatility = volatility * 0.75; // Wicks are related to volatility
@@ -547,7 +561,7 @@ const [chartData, setChartData] = useState([]);
         time: Date.now(),
         open,
         high: high, // Remove 9999 clamp
-        low: Math.max(0, low),     // Clamp low
+        low: Math.max(0.1, low),     // Clamp low slightly above 0
         close,
         volume: Math.floor(Math.random() * 1000) * (1 + Math.abs(momentum) * 2)
       };
@@ -583,7 +597,7 @@ const [chartData, setChartData] = useState([]);
   const [heartRate, setHeartRate] = useState(80);
   const [emotion, setEmotion] = useState('neutral');
   const [leverage, setLeverage] = useState(1);
-  const [showMobileControls, setShowMobileControls] = useState(false);
+  // const [showMobileControls, setShowMobileControls] = useState(false); // Removed state
   const [chartZoom, setChartZoom] = useState(1);
   const [chartOffset, setChartOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -718,7 +732,7 @@ const [chartData, setChartData] = useState([]);
 
     const latestPrice = chartData[chartData.length - 1]?.close || currentPrice;
     const pointDifference = latestPrice - entryPrice;
-    const pnlPerPoint = 10; // $10 PNL per point change
+    const pnlPerPoint = 5; // Reduced from 10 to decrease volatility impact ($5 PNL per point change)
 
     let newPnl;
     if (position === 'buy') {
@@ -775,15 +789,17 @@ const [chartData, setChartData] = useState([]);
       setSanity(s => Math.round(Math.max(0, s - 0.1) * 10) / 10);
     } else if (newPnl > initialMargin * 0.3) {
       newEmotion = 'euphoric';
-      setSanity(s => Math.round(Math.min(8, s + 0.05) * 10) / 10);
+      // REMOVED: Sanity increase on euphoria
+      // setSanity(s => Math.round(Math.min(8, s + 0.05) * 10) / 10);
     } else if (newPnl > initialMargin * 0.15) {
       newEmotion = 'happy';
     }
 
     // Additional trigger for high leverage insanity
-    if (leverage > 50 && Math.abs(pnlPercentage) > 10) {
+    // Additional trigger for high leverage insanity (MODIFIED RULE)
+    if (leverage > 10 && Math.abs(pnlPercentage) > 5) {
       newEmotion = 'insane';
-      setSanity(s => Math.round(Math.max(0, s - 0.15) * 10) / 10);
+      setSanity(s => Math.round(Math.max(0, s - 0.3) * 10) / 10); // MODIFIED DECREMENT
     }
 
     setEmotion(newEmotion);
@@ -849,11 +865,12 @@ const [chartData, setChartData] = useState([]);
     // Emotional response to trade result
     if (finalPnl > 0) {
       setEmotion('happy');
-      setSanity(s => Math.round(Math.min(8, s + 0.3) * 10) / 10);
+      // REMOVED: Sanity increase on profitable close
+      // setSanity(s => Math.round(Math.min(8, s + 0.3) * 10) / 10);
       setHeartRate(prev => Math.max(60, prev - 10));
-    } else {
+    } else { // finalPnl <= 0
       setEmotion('stressed');
-      setSanity(s => Math.round(Math.max(0, s - 0.3) * 10) / 10);
+      setSanity(s => Math.round(Math.max(0, s - 0.5) * 10) / 10); // MODIFIED DECREMENT
       setHeartRate(prev => Math.min(200, prev + 20));
     }
     
@@ -1132,10 +1149,7 @@ const [chartData, setChartData] = useState([]);
     );
   };
   
-  // Toggle mobile controls
-  const toggleMobileControls = () => {
-    setShowMobileControls(!showMobileControls);
-  };
+  // Removed toggleMobileControls function
 
   // Handle zoom
   const handleZoom = (direction) => {
@@ -1311,47 +1325,50 @@ const [chartData, setChartData] = useState([]);
       {/* Main Game Area */}
       {/* Ensure main area takes full width within its flex container */}
       <main
-        className="flex-1 w-full grid grid-cols-1 md:grid-cols-4 gap-2 min-h-0 overflow-hidden"
-        // Removed temporary border style
+        className="flex-1 w-full grid grid-cols-1 grid-rows-[3fr_1fr] md:grid-cols-4 md:grid-rows-1 gap-2 min-h-0 overflow-hidden p-1" // Added explicit rows for mobile, reset for md
       >
-        {/* Render ChartDisplay component */}
-        <ChartDisplay
-          ref={chartRef} // Pass the ref
-          position={position}
-          currentPrice={currentPrice}
-          entryPrice={entryPrice}
-          walletBalance={walletBalance}
-          pnl={pnl}
-          leverage={leverage}
-          liquidationPrice={liquidationPrice}
-          chartData={chartData}
-          visibleRange={visibleRange}
-          chartZoom={chartZoom}
-          chartOffset={chartOffset}
-          formatPrice={formatPrice}
-          formatPnl={formatPnl}
-          handleMouseDown={handleMouseDown}
-          handleMouseMove={handleMouseMove}
-          handleMouseUp={handleMouseUp}
-          handleScroll={handleScroll}
-          goToPast={goToPast}
-          goToPresent={goToPresent}
-          handleZoom={handleZoom}
-          getPricePosition={getPricePosition}
-          showMobileControls={showMobileControls}
-          toggleMobileControls={toggleMobileControls}
-        />
-
-        {/* Render TradingPanel component */}
-        <TradingPanel
-          position={position}
-          walletBalance={walletBalance}
-          leverage={leverage}
-          setLeverage={setLeverage} // Pass setter function
-          heartRate={heartRate}
-          getTraderEmoji={getTraderEmoji} // Pass function
-          showMobileControls={showMobileControls}
-        />
+        {/* ChartDisplay: Takes full width on mobile, 3/4 on medium+ */}
+        <div className="md:col-span-3 min-h-0 flex flex-col"> {/* Added container for span & flex */}
+          <ChartDisplay
+            ref={chartRef} // Pass the ref
+            position={position}
+            currentPrice={currentPrice}
+            entryPrice={entryPrice}
+            walletBalance={walletBalance}
+            pnl={pnl}
+            leverage={leverage}
+            liquidationPrice={liquidationPrice}
+            chartData={chartData}
+            visibleRange={visibleRange}
+            chartZoom={chartZoom}
+            chartOffset={chartOffset}
+            formatPrice={formatPrice}
+            formatPnl={formatPnl}
+            handleMouseDown={handleMouseDown}
+            handleMouseMove={handleMouseMove}
+            handleMouseUp={handleMouseUp}
+            handleScroll={handleScroll}
+            goToPast={goToPast}
+            goToPresent={goToPresent}
+            handleZoom={handleZoom}
+            getPricePosition={getPricePosition}
+            // Removed showMobileControls={showMobileControls}
+            // Removed toggleMobileControls={toggleMobileControls}
+          />
+        </div>
+  
+        {/* TradingPanel: Takes full width on mobile, 1/4 on medium+ */}
+        <div className="md:col-span-1 min-h-0 flex flex-col"> {/* Added container for span & flex */}
+          <TradingPanel
+            position={position}
+            walletBalance={walletBalance}
+            leverage={leverage}
+            setLeverage={setLeverage} // Pass setter function
+            heartRate={heartRate}
+            getTraderEmoji={getTraderEmoji} // Pass function
+            // Removed showMobileControls={showMobileControls}
+          />
+        </div>
       </main>
 
       {/* Render TradingActions component */}
@@ -1364,7 +1381,7 @@ const [chartData, setChartData] = useState([]);
         handleBuy={handleBuy}
         handleSell={handleSell}
         handleClose={handleClose}
-        showMobileControls={showMobileControls}
+        // Removed showMobileControls={showMobileControls}
       />
     </div>
   );

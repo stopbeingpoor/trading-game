@@ -9,26 +9,29 @@ const TradingActions = ({
   handleBuy, // Callback
   handleSell, // Callback
   handleClose, // Callback
-  showMobileControls, // To handle mobile visibility
+  // showMobileControls, // Removed - No longer used here
 }) => {
   return (
-    <footer className={`mt-2 ${!showMobileControls ? 'block' : 'hidden'} md:block`}>
-      {/* Position and Trade Summary */}
-      <div className="pixel-container p-2 mb-2 flex items-center justify-between">
-        <div className="flex items-center">
-          <span className="text-lg opacity-70 mr-2">Trading:</span>
-          <span className="text-lg font-bold">Full Balance at {leverage}x</span>
+    <footer className="mt-1 sm:mt-2 p-1"> {/* Adjusted margin/padding */}
+      {/* Footer is always rendered */}
+      {/* Position and Trade Summary - Stacks on mobile */}
+      <div className="pixel-container p-1 sm:p-2 mb-1 sm:mb-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-4">
+        {/* Use smaller text on mobile */}
+        <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
+          <span className="text-sm sm:text-base opacity-70 mr-2">Trading:</span>
+          <span className="text-sm sm:text-base font-bold">Full Balance @ {leverage}x</span>
         </div>
-        <div>
-          <span className="text-lg opacity-70 mr-2">Trades:</span>
-          <span className="text-lg font-bold">{tradeHistory.length}</span>
+        <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
+          <span className="text-sm sm:text-base opacity-70 mr-2">Trades:</span>
+          <span className="text-sm sm:text-base font-bold">{tradeHistory.length}</span>
         </div>
-        <div>
-          <span className="text-lg opacity-70 mr-2">PNL:</span>
-          <span className={`text-lg font-bold ${totalPnl >= 0 ? 'text-[var(--pixel-primary)]' : 'text-[var(--pixel-secondary)]'}`}>
+        <div className="flex items-center w-full sm:w-auto justify-between sm:justify-start">
+          <span className="text-sm sm:text-base opacity-70 mr-2">PNL:</span>
+          <span className={`text-sm sm:text-base font-bold ${totalPnl >= 0 ? 'text-[var(--pixel-primary)]' : 'text-[var(--pixel-secondary)]'}`}>
             {formatPnl(totalPnl)}
           </span>
         </div>
+        {/* Removed extra closing div here */}
       </div>
 
       {/* Trading buttons */}

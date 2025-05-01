@@ -38,9 +38,10 @@ const GameOver = ({
       <div className="text-xl mb-8 font-['Press_Start_2P']">Total PNL: {formatPnl(totalPnl)}</div>
 
       {/* Trade History */}
-      <div className="mt-4 w-full max-w-md mb-8"> {/* Added margin-top/bottom and constrained width */}
-        <div className="pixel-container p-2">
-          <h3 className="text-lg font-bold mb-2 text-center">TRADE HISTORY</h3> {/* Centered title */}
+      {/* Responsive width constraint */}
+      <div className="mt-4 w-full max-w-xs sm:max-w-md mb-6 sm:mb-8"> {/* Adjusted width/margin */}
+        <div className="pixel-container p-1 sm:p-2"> {/* Adjusted padding */}
+          <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2 text-center">TRADE HISTORY</h3> {/* Responsive text/margin */}
           {tradeHistory.length > 0 ? (
             <div className="relative">
               <div className="overflow-y-auto max-h-[150px]" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}> {/* Increased max-height */}
@@ -74,9 +75,10 @@ const GameOver = ({
         </div>
       </div>
 
+      {/* Responsive button */}
       <button
         onClick={resetGame} // Use resetGame prop
-        className="pixel-button bg-[#00ff00] text-black hover:bg-[#00cc00] px-8 py-4 text-xl font-['Press_Start_2P']"
+        className="pixel-button bg-[#00ff00] text-black hover:bg-[#00cc00] px-4 py-2 text-base sm:px-8 sm:py-4 sm:text-xl font-['Press_Start_2P']" /* Responsive padding/text */
       >
         PLAY AGAIN
       </button>

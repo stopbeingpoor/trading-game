@@ -5,18 +5,12 @@ import FullscreenButton from './FullscreenButton';
 // Simple container component that uses CSS for layout
 const GameViewportScaler = ({ children }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
-      {/* Game container with fixed size and margin */}
+    <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden p-2 sm:p-4">
+      {/* Outer container handles centering and responsive padding */}
+      {/* Game container takes available space */}
       <div
-        className="relative"
-        style={{
-          width: 'calc(100% - 30px)',   // 10px margin on left and right
-          height: 'calc(100% - 30px)',  // 10px margin on top and bottom
-          maxWidth: '100%',
-          maxHeight: '100%',
-          overflow: 'hidden',
-          backgroundColor: 'black',
-        }}
+        className="relative w-full h-full max-w-full max-h-full overflow-hidden bg-black"
+        // Removed inline style with fixed margin
       >
         {/* Game content */}
         <div className="w-full h-full">

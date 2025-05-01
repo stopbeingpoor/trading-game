@@ -79,7 +79,7 @@ const FullscreenButton = () => {
   return (
     <button
       onClick={toggleFullscreen}
-      className="pixel-button p-1 text-xs" // Override padding and font size
+      className="pixel-button p-1 text-xs min-w-0" // Override padding, font size, and remove min-width
       style={buttonStyle}
       title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
     >

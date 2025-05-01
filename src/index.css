@@ -491,7 +491,10 @@ input[type="range"]::-moz-range-thumb {
   }
   
   .text-xs {
-    font-size: 14px !important;
+    /* Allow default Tailwind size on mobile */
+    /* font-size: 14px !important; */
+    /* If you need a specific size different from default Tailwind xs, define it here without !important */
+    /* font-size: 12px; */ /* Example */
   }
   
   .text-sm {
@@ -808,11 +811,6 @@ input[type="range"]::-moz-range-thumb {
   }
 }
 
-/* ECG Animation */
-@keyframes ecgAnimation {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
 
 @keyframes ecgPulse {
   0% { opacity: 1; }
@@ -820,6 +818,7 @@ input[type="range"]::-moz-range-thumb {
   100% { opacity: 1; }
 }
 
+/* @keyframes ecgAnimation removed */
 .heart-rate-monitor {
   position: relative;
   width: 100%;
@@ -828,54 +827,76 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid #00ff00;
   overflow: hidden;
   margin-top: 4px;
+  transition: height 0.2s ease; /* Add transition for smoother resize */
 }
 
-.heart-rate-grid {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: 
-    linear-gradient(90deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(0, 255, 0, 0.1) 1px, transparent 1px);
-  background-size: 20px 20px;
-  z-index: 1;
+/* Responsive height for heart rate monitor */
+@media (max-width: 640px) {
+  .heart-rate-monitor {
+    height: 30px; /* Smaller height on mobile */
+  }
+  .heart-rate-value, .heart-icon {
+    font-size: 8px; /* Adjust icon/value size */
+  }
+}
+
+/* .heart-rate-grid removed */
+
+/* .ecg-line styles will be replaced below */
+/* New Retro ECG Animation */
+@keyframes retroEcgScroll {
+  0% { background-position: 0 0; }
+  100% { background-position: -50px 0; } /* Must match background-size width */
 }
 
 .ecg-line {
   position: absolute;
   top: 50%;
   left: 0;
-  width: 200%;
-  height: 40px;
+  width: 100%; /* Cover the container width */
+  height: 40px; /* Height to contain the pattern */
   transform: translateY(-50%);
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    transparent 48%, 
-    #00ff00 48%,
-    #00ff00 48.5%,
-    transparent 48.5%,
-    transparent 49%,
-    #00ff00 49%,
-    #00ff00 49.2%,
-    transparent 49.2%,
-    transparent 49.4%,
-    #00ff00 49.4%,
-    #00ff00 49.6%,
-    transparent 49.6%,
-    transparent 49.8%,
-    #00ff00 49.8%,
-    #00ff00 50%,
-    transparent 50%,
-    transparent 50.2%,
-    #00ff00 50.2%,
-    #00ff00 51%,
-    transparent 51%,
-    transparent 100%
+  /* Simple repeating retro pattern (adjust percentages for desired look) */
+  background-image: linear-gradient(90deg,
+    transparent 0%, transparent 40%,
+    var(--pixel-primary) 40%, var(--pixel-primary) 42%, /* Blip up */
+    transparent 42%, transparent 46%,
+    var(--pixel-primary) 46%, var(--pixel-primary) 48%, /* Blip down */
+    transparent 48%, transparent 100%
   );
-  animation: ecgAnimation 4s linear infinite;
+  background-size: 50px 6px; /* Width of pattern, height of line (adjusted to 15% container height) */
+  background-repeat: repeat-x;
+  background-position: 0 50%; /* Start position, centered vertically */
+  animation: retroEcgScroll 0.5s steps(10, end) infinite; /* Stepped animation */
   z-index: 2;
+}
+
+/* State Colors */
+.heart-rate-monitor[data-state="danger"] .ecg-line {
+  background-image: linear-gradient(90deg,
+    transparent 0%, transparent 40%,
+    var(--pixel-secondary) 40%, var(--pixel-secondary) 42%, /* Red blip */
+    transparent 42%, transparent 46%,
+    var(--pixel-secondary) 46%, var(--pixel-secondary) 48%, /* Red blip */
+    transparent 48%, transparent 100%
+  );
+}
+.heart-rate-monitor[data-state="warning"] .ecg-line {
+   background-image: linear-gradient(90deg,
+    transparent 0%, transparent 40%,
+    var(--pixel-yellow) 40%, var(--pixel-yellow) 42%, /* Yellow blip */
+    transparent 42%, transparent 46%,
+    var(--pixel-yellow) 46%, var(--pixel-yellow) 48%, /* Yellow blip */
+    transparent 48%, transparent 100%
+  );
+}
+
+/* Rate Speed */
+.heart-rate-monitor[data-rate="high"] .ecg-line {
+  animation-duration: 0.25s;
+}
+.heart-rate-monitor[data-rate="low"] .ecg-line {
+  animation-duration: 1s;
 }
 
 .heart-rate-value {
@@ -905,45 +926,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* Update the speed of the ECG animation based on heart rate */
-.heart-rate-monitor[data-rate="high"] .ecg-line {
-  animation-duration: 2s;
-}
-
-.heart-rate-monitor[data-rate="low"] .ecg-line {
-  animation-duration: 6s;
-}
+/* .ecg-line rate modifiers removed */
 
 /* Danger state */
 .heart-rate-monitor[data-state="danger"] {
   border-color: #ff3333;
 }
 
-.heart-rate-monitor[data-state="danger"] .ecg-line {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    transparent 48%, 
-    #ff3333 48%,
-    #ff3333 48.5%,
-    transparent 48.5%,
-    transparent 49%,
-    #ff3333 49%,
-    #ff3333 49.2%,
-    transparent 49.2%,
-    transparent 49.4%,
-    #ff3333 49.4%,
-    #ff3333 49.6%,
-    transparent 49.6%,
-    transparent 49.8%,
-    #ff3333 49.8%,
-    #ff3333 50%,
-    transparent 50%,
-    transparent 50.2%,
-    #ff3333 50.2%,
-    #ff3333 51%,
-    transparent 51%,
-    transparent 100%
-  );
-}
+/* .ecg-line danger state styles removed */
 
 .heart-rate-monitor[data-state="danger"] .heart-rate-value {
   color: #ff3333;
@@ -962,32 +952,7 @@ input[type="range"]::-moz-range-thumb {
   border-color: #ffcc00;
 }
 
-.heart-rate-monitor[data-state="warning"] .ecg-line {
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    transparent 48%, 
-    #ffcc00 48%,
-    #ffcc00 48.5%,
-    transparent 48.5%,
-    transparent 49%,
-    #ffcc00 49%,
-    #ffcc00 49.2%,
-    transparent 49.2%,
-    transparent 49.4%,
-    #ffcc00 49.4%,
-    #ffcc00 49.6%,
-    transparent 49.6%,
-    transparent 49.8%,
-    #ffcc00 49.8%,
-    #ffcc00 50%,
-    transparent 50%,
-    transparent 50.2%,
-    #ffcc00 50.2%,
-    #ffcc00 51%,
-    transparent 51%,
-    transparent 100%
-  );
-}
+/* .ecg-line warning state styles removed */
 
 .heart-rate-monitor[data-state="warning"] .heart-rate-value {
   color: #ffcc00;

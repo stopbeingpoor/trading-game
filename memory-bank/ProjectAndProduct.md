@@ -1,6 +1,6 @@
 # Project & Product Definition: Trading Game
 
-**Last Updated:** 2025-04-30 ---
+**Last Updated:** 2025-05-01 13:07:00 AEST ---
 
 ## PART 1: Project Foundation
 
@@ -99,6 +99,36 @@
     * [Cash balance updates correctly.]
 * **Designs/Mocks:** [Link if available]
 
+#### Feature/Epic: Trader Status & Feedback
+* **Description:** Manages and displays dynamic feedback to the player based on their actions and performance, including Sanity and Heart Rate.
+* **Components:** `GameHeader.jsx`, `TradingPanel.jsx`
+* **Sanity Meter:**
+    * **Purpose:** Represents the trader's mental state/risk tolerance (Max 8 points). Reaching 0 triggers game over.
+    * **Initial State:** 8 points.
+    * **Decrease Conditions:**
+        *   Opening Position (Buy/Sell): Varies by character: Stoic (-1), Nervous Newbie (-1.5), Full Degen (-2).
+        *   Significant Negative PNL (Real-time): Stressed state (PNL < -20% margin): -0.1; Panicked state (PNL < -50% margin): -0.2.
+        *   High Leverage + PNL Swing: Triggers if `leverage > 10` AND `abs(PNL %) > 5%`, causing a `-0.3` sanity change.
+        *   Closing Losing Position: Causes a `-0.5` sanity change.
+        *   Liquidation: -1.5.
+    * **Increase Conditions:** (None - Sanity only decreases or stays the same)
+    * **Implementation:** Logic resides in `InteractiveTradingPreview.jsx`, displayed in `GameHeader.jsx`. Values rounded to one decimal place.
+* **Heart Rate (BPM):**
+    * **Purpose:** Reflects trader stress/excitement.
+    * **Influences:** Increases when opening positions, during significant PNL swings (positive/negative), and with higher leverage. Decreases slightly after closing profitable trades or returning to neutral emotion.
+    * **Implementation:** Logic in `InteractiveTradingPreview.jsx`, displayed in `TradingPanel.jsx`.
+    * **Animation Style:** Multi-layered effect combining:
+        *   Scrolling horizontal ECG line (`retroEcgScroll` animation in `index.css`). Line height adjusted to 6px (~15% of container height). Speed and color change based on BPM.
+        *   Pulsing heart icon (scale) (`heartbeat` animation in `InteractiveTradingPreview.jsx`).
+        *   Pulsing heart icon & BPM value (opacity) (`ecgPulse` animation in `index.css`).
+        *   Glowing heart icon (`text-shadow` in `InteractiveTradingPreview.jsx`).
+        *   ~~Vertical background scanline (`scanline` animation in `InteractiveTradingPreview.jsx`)~~ (Removed).
+* **Trader Emotion:**
+    * **Purpose:** Visual feedback via emoji reflecting current state.
+    * **States:** Neutral, Happy, Stressed, Panicked, Excited, Euphoric, Insane.
+    * **Triggers:** Based on PNL percentage relative to initial margin, high leverage swings.
+    * **Implementation:** Logic in `InteractiveTradingPreview.jsx`, displayed in `TradingPanel.jsx`.
+
 ### 2.5. Non-Functional Requirements (Product View)
 * **Usability:** [Core trading actions are easily discoverable.]
 * **Performance:** [Charts load quickly.]
@@ -137,7 +167,7 @@
 * **PNL (Profit and Loss):** [The gain or loss on a trading position.]
 * **Leverage:** [Using borrowed funds to increase trading position size.]
 * **Liquidation:** [The forced closing of a leveraged position due to insufficient margin.]
-* **Sanity:** [A game mechanic representing the trader's mental state, decreasing with stress and losses.]
+* **Sanity:** [A game mechanic representing the trader's mental state (max 8 points). Decreases based on: opening positions (character-dependent), negative PNL (Stressed/Panicked states), high leverage (>10) combined with significant PNL swings (>5%), closing losing positions (-0.5), and liquidation (-1.5). Sanity does not increase during gameplay. Reaching 0 triggers game over. Implemented in `InteractiveTradingPreview.jsx`.]
 * **BPM (Beats Per Minute):** [Represents the trader's heart rate, reflecting excitement or stress.]
 
 

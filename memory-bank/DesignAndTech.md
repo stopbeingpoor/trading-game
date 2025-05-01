@@ -1,6 +1,6 @@
 # Technical Design & Decisions: Trading Game
 
-**Last Updated:** 2025-04-30 ---
+**Last Updated:** 2025-05-01 13:07:30 AEST ---
 
 ## 1. System Architecture
 
@@ -175,3 +175,22 @@ graph TD
 ### 6.4. Monitoring & Logging
 * **Monitoring:** [Supabase dashboard.]
 * **Logging:** [Supabase logs, console logs in frontend/Edge Functions.]
+
+### 6.7. Game Mechanics Implementation
+*   **Location:** Core game logic, including PNL calculation, trader status (sanity, heart rate, emotion), and position management, is primarily handled within the `InteractiveTradingPreview.jsx` component using React's `useState` and `useCallback` hooks.
+*   **Sanity Mechanic (`sanity` state):**
+    *   **Initial Value:** 8.
+    *   **Updates:** The `setSanity` state setter is called within various handler functions (`handleBuy`, `handleSell`, `handleClose`, `handleLiquidation`) and the `updatePnl` callback.
+    *   **Decrease Logic:**
+        *   Opening Position: -1 (Stoic), -1.5 (Nervous Newbie), -2 (Full Degen).
+        *   Negative PNL (Real-time): -0.1 (Stressed: PNL < -20% margin), -0.2 (Panicked: PNL < -50% margin).
+        *   High Leverage + PNL Swing: Triggers if `leverage > 10` AND `abs(PNL %) > 5%`, causing a `-0.3` sanity change.
+        *   Closing Losing Position: Causes a `-0.5` sanity change.
+        *   Liquidation: -1.5.
+    *   **Increase Logic:** (None - Sanity only decreases or stays the same as per code changes on 2025-05-01).
+    *   **Game Over:** Triggered immediately if sanity reaches 0. Check implemented within `handleBuy`/`handleSell` after decrement.
+    *   **Precision:** Values are rounded to one decimal place using `Math.round(... * 10) / 10`.
+*   **Heart Rate (`heartRate` state):**
+    *   Calculated based on base rate, PNL percentage relative to margin, leverage, and whether a position is open. Clamped between 60-200 BPM. Logic in `updatePnl`.
+*   **Emotion (`emotion` state):**
+    *   Determined by PNL percentage relative to margin and high leverage/PNL swing conditions. States include neutral, happy, stressed, panicked, excited, euphoric, insane. Logic in `updatePnl`.

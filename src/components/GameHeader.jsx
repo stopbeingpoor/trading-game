@@ -7,9 +7,9 @@ import FullDegenImg from '../assets/Characters/FullDegen.png';
 
 // Map character names to images
 const characterImages = {
-  Stoic: StoicImg,
-  NervousNewbie: NervousNewbieImg,
-  FullDegen: FullDegenImg,
+  'Stoic': StoicImg, // Added quotes for consistency, though not strictly needed here
+  'Nervous Newbie': NervousNewbieImg, // Added space and quotes
+  'Full Degen': FullDegenImg, // Added space and quotes
 };
 
 
@@ -24,12 +24,13 @@ const GameHeader = ({
   formatTime, // Function passed from parent
 }) => {
   return (
-    <header className="pixel-container p-2 mb-2">
-      <h1 className="pixel-header text-center">STOP BEING POOR</h1>
-      <div className="flex justify-between items-start">
+    <header className="pixel-container p-0.5 sm:p-2 mb-0.5 sm:mb-2"> {/* Reduced base padding/margin */}
+      <h1 className="pixel-header text-center text-lg sm:text-2xl">STOP BEING POOR</h1> {/* Responsive text */}
+      {/* Stacks vertically on mobile, row on small+, aligns center on mobile */}
+      <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start gap-1 sm:gap-4"> {/* Reduced base gap */}
         {/* Left Column: Trader Info + Sanity */}
-        <div className="flex flex-col gap-2">
-          <div className="trader-box">
+        <div className="flex flex-col gap-0.5 sm:gap-2 w-full sm:w-auto"> {/* Reduced base gap, width */}
+          <div className="trader-box p-0.5 sm:p-2"> {/* Reduced base padding */}
             {/* Display selected character image and name */}
             <div className="flex gap-2 items-center">
               {character && character.name && characterImages[character.name] ? ( // Check if character object and name exist and has a matching image
@@ -37,11 +38,11 @@ const GameHeader = ({
                   <img
                     src={characterImages[character.name]} // Use character name for image lookup
                     alt={character.name} // Use character name for alt text
-                    className="w-12 h-12 object-contain pixelated"
+                    className="w-8 h-8 sm:w-12 sm:h-12 object-contain pixelated" /* Smaller image on mobile */
                   />
                   <div>
                     {/* Display the character name */}
-                    <div className="trader-title">{character.name}</div>
+                    <div className="trader-title text-xs sm:text-sm">{character.name}</div> {/* Responsive text */}
                   </div>
                 </>
               ) : (
@@ -51,11 +52,11 @@ const GameHeader = ({
             </div>
           </div>
           {/* Sanity Container */}
-          <div className="sanity-container"> {/* Removed fixed width */}
-            <div className="flex items-center gap-1">
-              <span className="brain-icon">🧠</span> {/* Note: brain-icon class defined in InteractiveTradingPreview CSS */}
-              <span className="sanity-text">SANITY</span>
-              <span className={`sanity-value ${
+          <div className="sanity-container p-0.5 sm:p-2"> {/* Reduced base padding */}
+            <div className="flex items-center gap-0.5"> {/* Reduced base gap */}
+              <span className="brain-icon text-sm sm:text-base">🧠</span> {/* Responsive text */}
+              <span className="sanity-text text-xs sm:text-sm">SANITY</span> {/* Responsive text */}
+              <span className={`sanity-value text-xs sm:text-sm ${ /* Responsive text */
                 sanity > 6 ? 'text-[#00ff00]' :
                 sanity > 4 ? 'text-[#ffcc00]' :
                 sanity > 2 ? 'text-[#ff9900]' :
@@ -83,35 +84,37 @@ const GameHeader = ({
           </div>
         </div>
 
-        {/* Right Column: Stats */}
-        <div className="flex flex-col items-end gap-2"> {/* Main right column container */}
-          {/* Horizontal group for Wallet and PNL */}
-          <div className="flex items-center gap-4"> {/* Use items-center for vertical alignment if needed */}
+        {/* Right Column: Stats - Aligns center on mobile, end on small+ */}
+        <div className="flex flex-col items-center sm:items-end gap-0.5 sm:gap-2 w-full sm:w-auto"> {/* Reduced base gap, width, alignment */}
+          {/* Horizontal group for Wallet and PNL - Stacks on very small screens if needed (optional, using gap for now) */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-1 sm:gap-4"> {/* Reduced base gap, stacks on mobile */}
             {/* Wallet Balance Block */}
-            <div className="flex flex-col items-end">
-              <div className="text-sm opacity-70">WALLET BALANCE</div>
+            <div className="flex flex-col items-center sm:items-end"> {/* Adjusted alignment */}
+              <div className="text-xs sm:text-sm opacity-70">WALLET BALANCE</div> {/* Responsive text */}
               {/* Use formatPnl prop */}
-              <div className="text-lg">{formatPnl(walletBalance)}</div>
+              <div className="text-base sm:text-lg">{formatPnl(walletBalance)}</div> {/* Responsive text */}
             </div>
             {/* Total PNL Block */}
-            <div className="flex flex-col items-end">
-              <div className="text-sm opacity-70">TOTAL PNL</div>
+            <div className="flex flex-col items-center sm:items-end"> {/* Adjusted alignment */}
+              <div className="text-xs sm:text-sm opacity-70">TOTAL PNL</div> {/* Responsive text */}
               {/* Use formatPnl prop */}
-              <div className={`text-lg ${totalPnl >= 0 ? 'text-[#00ff00]' : 'text-[#ff3333]'}`}>
+              <div className={`text-base sm:text-lg ${totalPnl >= 0 ? 'text-[#00ff00]' : 'text-[#ff3333]'}`}> {/* Responsive text */}
                 {formatPnl(totalPnl)}
               </div>
             </div>
-          </div>
-          {/* Timer (Moved below Wallet/PNL group) */}
-          {/* Styled Timer */}
-          <div className="text-3xl font-['Press_Start_2P'] text-neon-red bg-black border-2 border-neon-red px-4 py-2 flex items-center">
-            {/* Red Dot */}
-            <span className="w-3 h-3 bg-neon-red rounded-full mr-3"></span>
-            {/* Use formatTime prop */}
-            {formatTime(timeElapsed)}
-          </div>
-          {/* Sanity Container was moved */}
-        </div>
+            </div> {/* Closes Wallet/PNL group */}
+
+            {/* Timer (Now correctly inside Right Column) */}
+            {/* Styled Timer */}
+            {/* Responsive text size, padding, margin - Reduced base size/padding */}
+            <div className="text-lg sm:text-3xl font-['Press_Start_2P'] text-neon-red bg-black border-2 border-neon-red px-1 py-0.5 sm:px-4 sm:py-2 flex items-center mt-0.5 sm:mt-0">
+              {/* Red Dot */}
+              <span className="w-2 h-2 sm:w-3 sm:h-3 bg-neon-red rounded-full mr-1 sm:mr-3"></span> {/* Reduced base margin */}
+              {/* Use formatTime prop */}
+              {formatTime(timeElapsed)}
+            </div>
+            {/* Sanity Container was moved */}
+          </div> {/* Closes Right Column */}
       </div>
     </header>
   );
