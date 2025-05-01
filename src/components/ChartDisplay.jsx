@@ -35,11 +35,12 @@ const ChartDisplay = forwardRef(({
                 <span className="opacity-70">Price:</span>
                 <span className="font-bold text-[var(--pixel-text)]">${formatPrice(currentPrice)}</span>
               </div>
-              <div className="text-lg font-bold border-l-2 border-[#333] pl-4">CURRENT POSITION</div>
+              <div className="text-lg font-bold border-l-2 border-[#333] pl-4">POSITION</div>
             </div>
-            <div className="flex items-center gap-3">
+            {/* Desktop Position Details */}
+            <div className="hidden md:flex items-center flex-wrap gap-3">
               <div className="flex items-center gap-1">
-                <span className="opacity-70">Type:</span>
+                <span className="opacity-70"></span>
                 <span className={position === 'buy' ? 'text-[var(--pixel-primary)]' : 'text-[var(--pixel-secondary)]'}>
                   {position === 'buy' ? 'LONG' : 'SHORT'}
                 </span>
@@ -55,11 +56,6 @@ const ChartDisplay = forwardRef(({
                 <span className="opacity-70 text-sm">@{leverage}x</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="opacity-70">Margin:</span>
-                 {/* Calculate initial balance for margin display */}
-                <span>${(walletBalance - pnl).toLocaleString()}</span>
-              </div>
-              <div className="flex items-center gap-1">
                 <span className="opacity-70">PNL:</span>
                 <span className={pnl >= 0 ? 'text-[var(--pixel-primary)]' : 'text-[var(--pixel-secondary)]'}>
                   {formatPnl(pnl)}
@@ -71,6 +67,26 @@ const ChartDisplay = forwardRef(({
                   <span className="text-[#ff3333] font-bold">${formatPrice(liquidationPrice)}</span>
                 </div>
               )}
+            </div>
+            {/* Mobile Position Marquee */}
+            <div className="block md:hidden overflow-hidden whitespace-nowrap text-sm pixel-container p-1 mobile-position-marquee-container">
+              <div className="mobile-position-marquee-content">
+                <span className={position === 'buy' ? 'text-[var(--pixel-primary)]' : 'text-[var(--pixel-secondary)]'}>
+                  {position === 'buy' ? 'LONG' : 'SHORT'}
+                </span>
+                {' | '}
+                <span className="opacity-70">Entry:</span> {formatPrice(entryPrice || 0)}
+                {' | '}
+                <span className="opacity-70">Size:</span> ${(walletBalance - pnl).toLocaleString()} <span className="opacity-70 text-xs">@{leverage}x</span>
+                {' | '}
+                <span className="opacity-70">PNL:</span> <span className={pnl >= 0 ? 'text-[var(--pixel-primary)]' : 'text-[var(--pixel-secondary)]'}>{formatPnl(pnl)}</span>
+                {liquidationPrice && (
+                  <>
+                    {' | '}
+                    <span className="text-[#ff3333]">Liq:</span> <span className="text-[#ff3333] font-bold">${formatPrice(liquidationPrice)}</span>
+                  </>
+                )}
+              </div>
             </div>
           </>
         ) : (

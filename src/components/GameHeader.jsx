@@ -81,9 +81,9 @@ const GameHeader = ({
         </div>
 
         {/* Right Column: Stats - Aligns center on mobile, end on small+ */}
-        <div className="flex flex-col items-center sm:items-end gap-0.5 sm:gap-2 w-full sm:w-auto"> {/* Reduced base gap, width, alignment */}
+        <div className="flex flex-row items-center justify-between md:flex-col md:items-end w-full sm:w-auto"> {/* Horizontal mobile, vertical md+, space-between mobile */}
           {/* Horizontal group for Wallet and PNL - Stacks on very small screens if needed (optional, using gap for now) */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-1 sm:gap-4"> {/* Reduced base gap, stacks on mobile */}
+          <div className="flex flex-row items-baseline gap-2"> {/* Horizontal layout, baseline align */}
             {/* Wallet Balance Block */}
             <div className="flex flex-col items-center sm:items-end"> {/* Adjusted alignment */}
               <div className="text-xs sm:text-sm opacity-70">WALLET BALANCE</div> {/* Responsive text */}

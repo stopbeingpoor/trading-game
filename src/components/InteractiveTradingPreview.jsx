@@ -612,11 +612,14 @@ const [chartData, setChartData] = useState([]);
   const [showLossAnimation, setShowLossAnimation] = useState(false); // State for loss animation
   const [animationPnl, setAnimationPnl] = useState(0); // State to hold PNL for animation
   const [initialMargin, setInitialMargin] = useState(0); // <-- ADDED: Store margin at trade entry
-
+  const [gameOverReason, setGameOverReason] = useState(null); // Reason for game over: 'time', 'liquidation', 'sanity'
+  const [showSanityGameOverAnimation, setShowSanityGameOverAnimation] = useState(false); // State for sanity game over animation
+ 
   const chartRef = useRef(null);
   const followingLatestRef = useRef(followingLatest); // Ref to track current value
   const intervalRef = useRef(null); // <-- ADDED: Ref for the timer interval
   const timeElapsedRef = useRef(timeElapsed); // <-- ADDED: Ref for time tracking in interval
+const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in callbacks
 
   // Effect for Initialization
   useEffect(() => {
@@ -649,6 +652,7 @@ const [chartData, setChartData] = useState([]);
       // Check for game over condition (time limit)
       if (newTime >= 90) {
         setIsGameOver(true); // Update game over state
+        setGameOverReason('time'); // Set reason to time
         if (intervalRef.current) {
           clearInterval(intervalRef.current); // Clear interval using ref
         }
@@ -705,7 +709,18 @@ const [chartData, setChartData] = useState([]);
 
     // Emotional response to liquidation
     setEmotion('panicked');
-    setSanity(s => Math.round(Math.max(0, s - 1.5) * 10) / 10); // Significant sanity hit
+    setSanity(prevSanity => {
+      const newSanity = Math.round(Math.max(0, prevSanity - 1.5) * 10) / 10; // Significant sanity hit
+      if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+        // Only trigger animation and clear interval here
+        setShowSanityGameOverAnimation(true);
+        if (intervalRef.current) { // Ensure interval is cleared
+          clearInterval(intervalRef.current);
+        }
+        // setIsGameOver and setGameOverReason are moved to the new useEffect
+      }
+      return newSanity;
+    });
     setHeartRate(prev => Math.min(200, prev + 40)); // Spike heart rate
 
     // Play liquidation animation
@@ -713,7 +728,8 @@ const [chartData, setChartData] = useState([]);
 
     // Set liquidation flag
     setIsLiquidated(true);
-
+    setGameOverReason('liquidation'); // Set reason to liquidation
+ 
     // End the game after animation completes
     // Ensure interval is cleared if game ends here
     if (intervalRef.current) {
@@ -783,10 +799,32 @@ const [chartData, setChartData] = useState([]);
     let newEmotion = 'neutral';
     if (newPnl < -initialMargin * 0.5) {
       newEmotion = 'panicked';
-      setSanity(s => Math.round(Math.max(0, s - 0.2) * 10) / 10);
+      setSanity(prevSanity => {
+        const newSanity = Math.round(Math.max(0, prevSanity - 0.2) * 10) / 10;
+        if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+          // Only trigger animation and clear interval here
+          setShowSanityGameOverAnimation(true);
+          if (intervalRef.current) { // Ensure interval is cleared
+            clearInterval(intervalRef.current);
+          }
+          // setIsGameOver and setGameOverReason are moved to the new useEffect
+        }
+        return newSanity;
+      });
     } else if (newPnl < -initialMargin * 0.2) {
       newEmotion = 'stressed';
-      setSanity(s => Math.round(Math.max(0, s - 0.1) * 10) / 10);
+      setSanity(prevSanity => {
+        const newSanity = Math.round(Math.max(0, prevSanity - 0.1) * 10) / 10;
+        if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+          // Only trigger animation and clear interval here
+          setShowSanityGameOverAnimation(true);
+          if (intervalRef.current) { // Ensure interval is cleared
+            clearInterval(intervalRef.current);
+          }
+          // setIsGameOver and setGameOverReason are moved to the new useEffect
+        }
+        return newSanity;
+      });
     } else if (newPnl > initialMargin * 0.3) {
       newEmotion = 'euphoric';
       // REMOVED: Sanity increase on euphoria
@@ -799,12 +837,22 @@ const [chartData, setChartData] = useState([]);
     // Additional trigger for high leverage insanity (MODIFIED RULE)
     if (leverage > 10 && Math.abs(pnlPercentage) > 5) {
       newEmotion = 'insane';
-      setSanity(s => Math.round(Math.max(0, s - 0.3) * 10) / 10); // MODIFIED DECREMENT
+      setSanity(prevSanity => {
+        const newSanity = Math.round(Math.max(0, prevSanity - 0.3) * 10) / 10; // MODIFIED DECREMENT
+        if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+          // Only trigger animation and clear interval here
+          setShowSanityGameOverAnimation(true);
+          if (intervalRef.current) { // Ensure interval is cleared
+            clearInterval(intervalRef.current);
+          }
+          // setIsGameOver and setGameOverReason are moved to the new useEffect
+        }
+        return newSanity;
+      });
     }
 
     setEmotion(newEmotion);
-
-  }, [position, entryPrice, initialMargin, chartData, currentPrice, leverage, handleLiquidation, setPnl, setWalletBalance, setHeartRate, setEmotion, setSanity]); // Updated dependencies
+  }, [position, entryPrice, initialMargin, chartData, currentPrice, leverage, handleLiquidation, setPnl, setWalletBalance, setHeartRate, setEmotion, setSanity, setIsGameOver, setGameOverReason, setShowSanityGameOverAnimation]); // Removed isGameOver, Added related setters
 
   // Update PNL when relevant states change
   useEffect(() => {
@@ -814,7 +862,9 @@ const [chartData, setChartData] = useState([]);
     }
     // Note: PNL reset is handled within handleClose and handleLiquidation when position ends
   }, [position, entryPrice, chartData, initialMargin, updatePnl]); // Dependencies for triggering PNL update
-  
+
+  // Removed Centralized Sanity Game Over Check useEffect as it's handled in the new useEffect below
+  // and within the individual setSanity callbacks.
   // Handle close with enhanced trader responses
   const handleClose = () => {
     if (!position || !entryPrice) return;
@@ -870,7 +920,18 @@ const [chartData, setChartData] = useState([]);
       setHeartRate(prev => Math.max(60, prev - 10));
     } else { // finalPnl <= 0
       setEmotion('stressed');
-      setSanity(s => Math.round(Math.max(0, s - 0.5) * 10) / 10); // MODIFIED DECREMENT
+      setSanity(prevSanity => {
+        const newSanity = Math.round(Math.max(0, prevSanity - 0.5) * 10) / 10; // MODIFIED DECREMENT
+        if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+          // Only trigger animation and clear interval here
+          setShowSanityGameOverAnimation(true);
+          if (intervalRef.current) { // Ensure interval is cleared
+            clearInterval(intervalRef.current);
+          }
+          // setIsGameOver and setGameOverReason are moved to the new useEffect
+        }
+        return newSanity;
+      });
       setHeartRate(prev => Math.min(200, prev + 20));
     }
     
@@ -999,11 +1060,13 @@ const [chartData, setChartData] = useState([]);
 
     setSanity(prevSanity => {
       const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
-      if (newSanity <= 0 && !isGameOver) { // Check !isGameOver to prevent multiple triggers
-        setIsGameOver(true); // Trigger game over if sanity reaches zero
-        if (intervalRef.current) { // Stop timer if game over
+      if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+        // Only trigger animation and clear interval here
+        setShowSanityGameOverAnimation(true);
+        if (intervalRef.current) { // Ensure interval is cleared
           clearInterval(intervalRef.current);
         }
+        // setIsGameOver and setGameOverReason are moved to the new useEffect
       }
       return newSanity;
     });
@@ -1058,11 +1121,13 @@ const [chartData, setChartData] = useState([]);
 
     setSanity(prevSanity => {
       const newSanity = Math.round(Math.max(0, prevSanity - decrement) * 10) / 10;
-      if (newSanity <= 0 && !isGameOver) { // Check !isGameOver to prevent multiple triggers
-        setIsGameOver(true); // Trigger game over if sanity reaches zero
-        if (intervalRef.current) { // Stop timer if game over
+      if (newSanity <= 0 && !isGameOverRef.current) { // Use ref: Check if sanity hit zero AND game isn't already over
+        // Only trigger animation and clear interval here
+        setShowSanityGameOverAnimation(true);
+        if (intervalRef.current) { // Ensure interval is cleared
           clearInterval(intervalRef.current);
         }
+        // setIsGameOver and setGameOverReason are moved to the new useEffect
       }
       return newSanity;
     });
@@ -1245,7 +1310,30 @@ const [chartData, setChartData] = useState([]);
     timeElapsedRef.current = timeElapsed;
   }, [timeElapsed]);
   // <-- END ADDED -->
-  
+
+  // Keep isGameOverRef updated with the latest state value
+  useEffect(() => {
+    isGameOverRef.current = isGameOver;
+  }, [isGameOver]);
+
+  // Effect to handle delayed game over after sanity animation
+  useEffect(() => {
+    let timerId;
+    if (showSanityGameOverAnimation) {
+      // Set a timeout to trigger game over after the animation duration
+      timerId = setTimeout(() => {
+        setIsGameOver(true);
+        setGameOverReason('sanity');
+        // Optionally reset animation state here, though resetGame also does it
+        // setShowSanityGameOverAnimation(false);
+      }, 2000); // Delay matches animation duration (adjust if needed)
+    }
+
+    // Cleanup function to clear the timeout if the component unmounts
+    // or if showSanityGameOverAnimation becomes false before the timeout finishes
+    return () => clearTimeout(timerId);
+  }, [showSanityGameOverAnimation, setIsGameOver, setGameOverReason]); // Dependencies
+
   // Add reset game function
   const resetGame = () => {
     // Clear the interval first
@@ -1275,12 +1363,13 @@ const [chartData, setChartData] = useState([]);
     setChartOffset(0);
     setFollowingLatest(true);
     followingLatestRef.current = true; // Reset ref too
-    
+    setShowSanityGameOverAnimation(false); // Reset sanity animation state
+
     // Reset liquidation state
     setIsLiquidated(false);
     setLiquidationDetails(null);
     setShowLiquidationAnimation(false);
-    
+
     // Clear chart data last - this will trigger the useEffect to reinitialize
     setChartData([]);
   };
@@ -1290,6 +1379,7 @@ const [chartData, setChartData] = useState([]);
     return (
       <GameOver
         isLiquidated={isLiquidated}
+        gameOverReason={gameOverReason} // Pass the reason
         liquidationDetails={liquidationDetails}
         walletBalance={walletBalance}
         totalPnl={totalPnl}
@@ -1302,13 +1392,14 @@ const [chartData, setChartData] = useState([]);
   }
 
   return (
-    <div className="h-full w-full flex flex-col overflow-hidden">
+    <div className="h-full w-full flex flex-col overflow-hidden gap-2">
       {/* Render AnimationOverlays component */}
       <AnimationOverlays
         showProfitAnimation={showProfitAnimation}
         showLossAnimation={showLossAnimation}
         showLiquidationAnimation={showLiquidationAnimation}
         pnlAmount={animationPnl} // Pass the animation PNL state
+        showSanityGameOverAnimation={showSanityGameOverAnimation} // Pass sanity animation state
       />
 
       {/* Render GameHeader component */}
@@ -1325,7 +1416,7 @@ const [chartData, setChartData] = useState([]);
       {/* Main Game Area */}
       {/* Ensure main area takes full width within its flex container */}
       <main
-        className="flex-1 w-full grid grid-cols-1 grid-rows-[3fr_1fr] md:grid-cols-4 md:grid-rows-1 gap-2 min-h-0 overflow-hidden p-1" // Added explicit rows for mobile, reset for md
+        className="flex-1 w-full grid grid-cols-1 grid-rows-[1fr_min-content] md:grid-cols-4 md:grid-rows-1 gap-2 min-h-0 overflow-hidden p-1" // Attempt 3: Changed mobile rows to 1fr min-content
       >
         {/* ChartDisplay: Takes full width on mobile, 3/4 on medium+ */}
         <div className="md:col-span-3 min-h-0 flex flex-col"> {/* Added container for span & flex */}

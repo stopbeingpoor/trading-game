@@ -4,6 +4,7 @@ const AnimationOverlays = ({
   showProfitAnimation,
   showLossAnimation,
   showLiquidationAnimation,
+  showSanityGameOverAnimation, // Add prop for sanity game over
   pnlAmount, // Add pnlAmount prop
 }) => {
   // Helper to format PnL (basic example, might need refinement)
@@ -61,6 +62,37 @@ const AnimationOverlays = ({
               }}
             >
               LIQUIDATED!
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sanity Game Over Animation Overlay */}
+      {showSanityGameOverAnimation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"> {/* Mirrored structure */}
+          {/* Screen flash overlay */}
+          <div
+            className="absolute inset-0"
+            style={{
+              animation: 'sanityGameOverFlash 0.5s ease-in-out', // Use specific sanity flash animation
+              // Assuming sanityGameOverFlash keyframes handle background color
+            }}
+          />
+
+          {/* Screen shake container */}
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ animation: 'screenShake 0.5s ease-in-out' }} // Added screenShake animation
+          >
+            {/* Sanity Game Over text */}
+            <div
+              className="text-[#cc99ff] text-6xl font-['Press_Start_2P']" // Updated to purple theme
+              style={{
+                animation: 'sanityGameOverTextAnimation 0.8s ease-out forwards', // Use specific sanity text animation
+                textShadow: '0 0 10px #cc99ff, 0 0 20px #cc99ff' // Updated to purple theme shadow
+              }}
+            >
+              You f**king gambler.
             </div>
           </div>
         </div>

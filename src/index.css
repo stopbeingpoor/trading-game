@@ -88,7 +88,7 @@ body {
 }
 
 .pixel-container {
-  border: 2px solid var(--pixel-border);
+  border: 0px solid var(--pixel-border);
   border-radius: 0px;
   padding: 10px;
   background-color: rgba(10, 10, 10, 0.9);
@@ -852,6 +852,9 @@ input[type="range"]::-moz-range-thumb {
   .heart-rate-value, .heart-icon {
     font-size: 8px; /* Adjust icon/value size */
   }
+  .ecg-line {
+    height: 30px; /* Match mobile container height */
+  }
 }
 
 /* .heart-rate-grid removed */
@@ -878,7 +881,7 @@ input[type="range"]::-moz-range-thumb {
     var(--pixel-primary) 46%, var(--pixel-primary) 48%, /* Blip down */
     transparent 48%, transparent 100%
   );
-  background-size: 50px 6px; /* Width of pattern, height of line (adjusted to 15% container height) */
+  background-size: 50px 12px; /* Width of pattern, height of line (adjusted to 15% container height) */
   background-repeat: repeat-x;
   background-position: 0 50%; /* Start position, centered vertically */
   animation: retroEcgScroll 0.5s steps(10, end) infinite; /* Stepped animation */
@@ -1062,4 +1065,17 @@ input[type="range"].retro-slider::-moz-range-thumb:hover {
   border: 2px solid #000;
   border-radius: 0px;
   cursor: pointer;
+}
+
+/* Marquee Animation for Mobile Position Display */
+@keyframes marquee-scroll {
+  0% { transform: translateX(0); } /* Start from the padded position */
+  100% { transform: translateX(-100%); } /* Move completely off-screen left */
+}
+
+.mobile-position-marquee-content {
+  display: inline-block; /* Necessary for transform and whitespace-nowrap */
+  padding-left: 100%; /* Start the text off-screen to the right */
+  animation: marquee-scroll 20s linear infinite; /* Adjust duration as needed */
+  white-space: nowrap; /* Ensure content stays on one line */
 }

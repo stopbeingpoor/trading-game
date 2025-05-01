@@ -44,7 +44,7 @@ const TradingActions = ({
           onClick={handleBuy}
           disabled={position === 'buy'}
         >
-          BUY/LONG
+          BUY
         </button>
         <button
           className={`pixel-button sell-button ${
@@ -53,7 +53,7 @@ const TradingActions = ({
           onClick={handleSell}
           disabled={position === 'sell'}
         >
-          SELL/SHORT
+          SELL
         </button>
         <button
           className={`pixel-button close-button ${

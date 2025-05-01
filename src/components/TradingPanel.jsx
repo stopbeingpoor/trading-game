@@ -7,18 +7,18 @@ const TradingPanel = ({
   // showMobileControls, // Removed - No longer used here
 }) => {
   return (
-    <div className="flex flex-col gap-2 overflow-auto p-1"> {/* Removed conditional hidden/md:block, added padding */}
+    <div className="flex flex-col gap-2 p-0.5 sm:p-1"> {/* Removed overflow-auto, adjusted padding */}
       {/* Panel is always rendered; parent grid controls visibility/placement */}
       {/* Trading Settings */}
       {/* Reverted overflow/height changes, kept reduced padding */}
-      <div className="pixel-container p-0.5 sm:p-2">
-        <h3 className="text-sm sm:text-base font-bold mb-1 sm:mb-2">TRADING SETTINGS</h3> {/* Adjusted text size/margin */}
+      <div className="pixel-container p-0.5 sm:p-1"> {/* Adjusted padding */}
+        <h3 className="text-sm sm:text-base font-bold mb-1">TRADING SETTINGS</h3> {/* Adjusted margin */}
 
-        {/* Leverage Control - Reduced bottom margin on smallest screens */}
-        <div className="mb-1 sm:mb-3">
+        {/* Leverage Control - Reduced bottom margin */}
+        <div className="mb-1 sm:mb-2"> {/* Adjusted margin */}
           <div className={`cyber-slider-container ${leverage > 100 ? 'high-leverage-warning' : ''}`}>
-            {/* Added flex-wrap, removed bottom margin on smallest screens */}
-            <div className="flex justify-between flex-wrap mb-0 sm:mb-1">
+            {/* Added flex-wrap, removed bottom margin */}
+            <div className="flex justify-between flex-wrap mb-0"> {/* Adjusted margin */}
               <span className="slider-label status-label">LEVERAGE</span>
               <span className={`slider-value status-label ${
                 leverage > 500 ? 'text-[#ff3333]' :
@@ -45,11 +45,11 @@ const TradingPanel = ({
 
       {/* Trader Status */}
       {/* Applied responsive padding directly - Removed flex-grow */}
-      <div className="pixel-container p-1 sm:p-2">
-        <h3 className="text-sm sm:text-base font-bold mb-1 sm:mb-2">TRADER STATUS</h3> {/* Adjusted text size/margin */}
+      <div className="pixel-container p-0.5 sm:p-1"> {/* Adjusted padding */}
+        <h3 className="text-sm sm:text-base font-bold mb-1">TRADER STATUS</h3> {/* Adjusted margin */}
 
         {/* Heart rate */}
-        <div className="flex flex-col mb-4 bg-black p-2 border-2 border-[#333] rounded-sm">
+        <div className="flex flex-col mb-2 sm:mb-3 bg-black p-2 border-2 border-[#333] rounded-sm"> {/* Adjusted margin */}
           <div className="flex justify-between mb-1">
             <span className="status-label">BPM</span>
           </div>

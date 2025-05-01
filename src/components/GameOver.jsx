@@ -1,7 +1,8 @@
 import React from 'react';
 
 const GameOver = ({
-  isLiquidated,
+  isLiquidated, // Keep for liquidation details display logic
+  gameOverReason, // New prop for heading
   liquidationDetails,
   walletBalance,
   totalPnl,
@@ -13,7 +14,9 @@ const GameOver = ({
   return (
     <div className="h-full w-full flex flex-col items-center justify-center bg-black text-[#00ff00]">
       <h1 className="text-4xl font-['Press_Start_2P'] mb-8">
-        {isLiquidated ? "LIQUIDATED!" : "TIME'S UP!"}
+        {gameOverReason === 'liquidation' ? "LIQUIDATED!" :
+         gameOverReason === 'sanity' ? "You f**king gambler." :
+         "TIME'S UP!"}
       </h1>
 
       {isLiquidated && liquidationDetails && (
@@ -34,8 +37,8 @@ const GameOver = ({
         </div>
       )}
 
-      <div className="text-xl mb-4 font-['Press_Start_2P']">Final Balance: {formatPnl(walletBalance)}</div>
-      <div className="text-xl mb-8 font-['Press_Start_2P']">Total PNL: {formatPnl(totalPnl)}</div>
+      <div className="text-base md:text-xl mb-2 md:mb-4 font-['Press_Start_2P']">Final Balance: {formatPnl(walletBalance)}</div>
+      <div className="text-base md:text-xl mb-4 md:mb-8 font-['Press_Start_2P']">Total PNL: {formatPnl(totalPnl)}</div>
 
       {/* Trade History */}
       {/* Responsive width constraint */}
