@@ -24,14 +24,13 @@
 
 *   **Problem:** Users need a platform to practice stock trading strategies in a risk-free, engaging environment.
 *   **In Scope:**
-    *   Access code verification for game entry (Supabase Edge Functions).
+    *   User authentication (login and session management) via Supabase with Google OAuth.
     *   Character selection with unique gameplay modifiers (Sanity drain).
     *   Simulated buying and selling of a single asset.
     *   Display of a procedurally generated, dynamic stock chart.
     *   Real-time PNL, wallet, and liquidation price tracking.
     *   An emotional feedback system including Sanity, Heart Rate, and a dynamic Emotion emoji.
 *   **Out of Scope:**
-    *   User registration and login.
     *   Real-money trading.
     *   Integration with external financial APIs for live data.
     *   Advanced trading features (e.g., options, futures).
@@ -47,19 +46,19 @@ The game progresses through distinct phases, guided by user interaction and game
 
 ```mermaid
 graph TD
-    A[Start Screen] -->|Click START GAME| B(Character Select);
+    A[Login Screen] -->|Successful Login| B(Character Select);
     B -->|Select Character| C(Trading Phase);
     C -->|Timer Runs Out| D{Game Over};
     C -->|Liquidation Triggered| D;
     C -->|Sanity Reaches 0| D;
-    D -->|Click PLAY AGAIN| A;
+    D -->|Click PLAY AGAIN| B;
 ```
 
-1.  **Start Screen:** Player initiates the game.
-2.  **Character Selection:** Player chooses one of three trader personas (Stoic, Nervous Newbie, Full Degen), which influences gameplay elements like Sanity drain.
+1.  **Login Screen:** Player authenticates using Google OAuth to enter the game.
+2.  **Character Selection:** Upon successful login, the player chooses one of three trader personas (Stoic, Nervous Newbie, Full Degen), which influences gameplay elements like Sanity drain.
 3.  **Trading Phase:** Player actively manages trades within a **90-second** time limit.
 4.  **Game Over:** The game ends when the timer expires, the player is liquidated, or their sanity reaches zero. Final results and a trade history are displayed.
-5.  **Restart:** Player can choose to play again, returning to the Start Screen with a fresh $10,000 wallet.
+5.  **Restart:** Player can choose to play again, returning to the **Character Select** screen with a fresh $10,000 wallet.
 
 ### 2.2. Core Mechanics
 
@@ -124,7 +123,7 @@ This system provides dynamic feedback to the player based on their actions and p
 
 *   **`GameViewportScaler`:** Ensures the entire game interface scales to fit the player's browser window, and includes the fullscreen toggle button.
 *   **Start Screen:** Minimalist screen with game logo, title, and "START GAME" button against an animated GIF background.
-*   **`AccessCodeVerification` Screen:** A modal-like screen with an input field and "Verify Code" button. Displays success or error messages.
+*   **`Login` Screen:** A clean interface for users to sign in using Google OAuth.
 *   **`CharacterSelect` Screen:** Presents the three trader personas with their images in a grid. Clicking a character starts the game.
 *   **Trading Screen (Main Gameplay):**
     *   **`GameHeader` (Top):** Displays selected character's image and name, Wallet Balance, Total Session PNL, a 90-second countdown Timer, and the visual Sanity Meter.
@@ -151,9 +150,9 @@ This system provides dynamic feedback to the player based on their actions and p
 ```mermaid
 graph TD
     User --> FE[Frontend (React SPA)];
-    FE --> Supabase[Supabase Client Library];
-    Supabase --> |Edge Functions| SupabaseFunctions[Supabase Edge Functions];
-    SupabaseFunctions --> SupabaseDB[(Supabase Database)];
+    FE --> SupabaseClient[Supabase Client Library];
+    SupabaseClient --> |Auth (Google OAuth)| SupabaseAuth[Supabase Auth Service];
+    SupabaseAuth --> SupabaseDB[(Supabase `auth.users` table)];
 ```
 
 ### 4.2. Technology Stack & Rationale
@@ -167,11 +166,10 @@ graph TD
 
 ### 4.3. Data Model & Security
 
-*   **Key Entities:** `access_codes` table in Supabase.
-*   **Schema:** A single table `access_codes` with a `code` column.
+*   **Data Model:** The application does not use a custom data model for users. It relies entirely on the built-in `auth.users` table provided and managed by the Supabase authentication service.
 *   **Security:**
-    *   **Access Control:** The game is gated by an access code verified via a Supabase Edge Function.
-    *   **CORS:** The Edge Function has a defined list of allowed origins.
+    *   **Authentication:** User access is managed via Supabase Authentication, using Google as the OAuth provider. Client-side logic in `App.jsx` routes users to the login screen if they do not have an active session.
+    *   **Environment Variables:** The Supabase URL and anonymous key are stored in a `.env` file and are not exposed in the repository, following security best practices.
 
 ### 4.4. Key Technical Implementations
 
@@ -189,11 +187,12 @@ graph TD
     ├── src/               # Frontend React code
     │   ├── assets/        # Images, GIFs
     │   ├── components/    # Reusable UI components
-    │   ├── App.jsx        # Main application component with game state logic
+    │   ├── context/       # React Context for Auth
+    │   ├── hooks/         # Custom hooks (e.g., useAuth)
+    │   ├── App.jsx        # Main application component with routing & auth state
     │   ├── main.jsx       # Application entry point
     │   └── supabaseClient.js # Supabase client initialization
-    ├── supabase/          # Supabase backend files
-    │   └── functions/     # Edge Functions (e.g., verify-access-code)
+    ├── supabase/          # Supabase backend files (if any)
     ├── context/           # Project documentation
     └── ... (config files)
     ```

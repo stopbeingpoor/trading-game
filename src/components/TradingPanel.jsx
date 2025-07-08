@@ -1,9 +1,22 @@
 import React from 'react';
+
+import StoicImg from '../assets/Characters/Stoic.png';
+import NervousNewbieImg from '../assets/Characters/NervousNewbie.png';
+import FullDegenImg from '../assets/Characters/FullDegen.png';
+
+const characterImages = {
+  'Stoic': StoicImg,
+  'Nervous Newbie': NervousNewbieImg,
+  'Full Degen': FullDegenImg,
+};
+
 const TradingPanel = ({
   position, // To disable leverage slider
   leverage,
   setLeverage, // Callback to update leverage
   heartRate,
+  sanity,
+  character,
   // showMobileControls, // Removed - No longer used here
 }) => {
   return (
@@ -66,6 +79,49 @@ const TradingPanel = ({
             <div className="ecg-line"></div>
             <span className="heart-icon">❤️</span> {/* Note: heart-icon class defined in InteractiveTradingPreview CSS */}
             <span className="heart-rate-value">{heartRate}</span>
+          </div>
+        </div>
+        {/* Sanity Container */}
+        <div className="sanity-container flex items-center gap-x-2 p-0.5 sm:p-2">
+          <span className="brain-icon text-sm sm:text-base">🧠</span>
+          <div className="sanity-bar flex-grow">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className={`sanity-segment ${
+                  i < sanity
+                    ? i >= 6
+                      ? 'filled'
+                      : i >= 4
+                        ? 'warning'
+                        : i >= 2
+                          ? 'warning'
+                          : 'danger'
+                    : ''
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        {/* Trader Profile Display */}
+        <div className="flex gap-2 mt-2 h-32">
+          {/* Box 1: Picture */}
+          <div className="flex-grow trader-profile-box">
+            {character && character.name && characterImages[character.name] ? (
+              <img
+                src={characterImages[character.name]}
+                alt={character.name}
+                className="h-full w-auto object-contain pixelated p-1"
+              />
+            ) : (
+              <span className="text-red-500">PICTURE</span>
+            )}
+          </div>
+          {/* Box 2: Name */}
+          <div className="w-1/3 trader-profile-box">
+            <span className="text-red-500 font-['Press_Start_2P'] text-center text-sm leading-tight">
+              {character ? character.name.replace(' ', '\n') : 'Full\nDegen'}
+            </span>
           </div>
         </div>
       </div>

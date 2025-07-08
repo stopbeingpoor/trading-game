@@ -13,6 +13,8 @@ const ChartDisplay = forwardRef(({
   visibleRange,
   chartZoom,
   chartOffset,
+  timeElapsed,
+  formatTime,
   // followingLatest, // Not directly used in JSX, but handlers might need it
   formatPrice,
   formatPnl,
@@ -217,6 +219,11 @@ const ChartDisplay = forwardRef(({
             {formatPnl(pnl)}
           </div>
         )}
+      {/* Timer */}
+      <div className="absolute bottom-2 left-2 text-lg font-['Press_Start_2P'] text-neon-red bg-black bg-opacity-50 border border-neon-red px-2 py-1 flex items-center">
+        <span className="w-2 h-2 bg-neon-red rounded-full mr-2"></span>
+        {formatTime(timeElapsed)}
+      </div>
       </div>
 
       {/* Removed Mobile toggle button */}

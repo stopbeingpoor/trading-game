@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import GameHeader from './GameHeader'; // Import the new component
 import ChartDisplay from './ChartDisplay'; // Import the chart component
 import TradingPanel from './TradingPanel'; // Import the controls panel component
@@ -7,6 +8,7 @@ import GameOver from './GameOver'; // Import the game over component
 import AnimationOverlays from './AnimationOverlays'; // Import the animation overlays component
 
 const InteractiveTradingPreview = ({ selectedCharacter }) => { // Accept selectedCharacter prop
+  const { profile, updateWalletBalance } = useAuth();
   // Add CSS keyframes for animations
   useEffect(() => {
     const style = document.createElement('style');
@@ -632,7 +634,13 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
         setCurrentPrice(initialData[initialData.length - 1].close);
       }
     }
-  }, [chartData.length, generateInitialData, setChartData, setCurrentPrice]); // Dependencies for initialization
+  }, [chartData.length, generateInitialData]); // Dependencies for initialization
+
+  useEffect(() => {
+    if (profile) {
+      setWalletBalance(profile.wallet_balance);
+    }
+  }, [profile]);
 
   // Effect for Timer Interval
   useEffect(() => {
@@ -852,7 +860,7 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
     }
 
     setEmotion(newEmotion);
-  }, [position, entryPrice, initialMargin, chartData, currentPrice, leverage, handleLiquidation, setPnl, setWalletBalance, setHeartRate, setEmotion, setSanity, setIsGameOver, setGameOverReason, setShowSanityGameOverAnimation]); // Removed isGameOver, Added related setters
+  }, [position, entryPrice, initialMargin, chartData, currentPrice, leverage, handleLiquidation, setPnl, setWalletBalance, setHeartRate, setEmotion, setSanity, setShowSanityGameOverAnimation]); // Removed isGameOver, Added related setters
 
   // Update PNL when relevant states change
   useEffect(() => {
@@ -1342,6 +1350,11 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
       intervalRef.current = null;
     }
 
+    // Save wallet balance if a profile exists
+    if (profile) {
+      updateWalletBalance(walletBalance);
+    }
+
     // Reset all game states
     setIsGameOver(false);
     setTimeElapsed(0);
@@ -1350,7 +1363,6 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
     setEntryPrice(null);
     setPnl(0);
     setTotalPnl(0);
-    setWalletBalance(10000);
     setTradeHistory([]);
     setSanity(8);
     setHeartRate(80);
@@ -1404,13 +1416,10 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
 
       {/* Render GameHeader component */}
       <GameHeader
-        character={selectedCharacter}
+        profile={profile}
         walletBalance={walletBalance}
         totalPnl={totalPnl}
-        timeElapsed={timeElapsed}
-        sanity={sanity}
         formatPnl={formatPnl} // Pass the function
-        formatTime={formatTime} // Pass the function
       />
 
       {/* Main Game Area */}
@@ -1433,6 +1442,8 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
             visibleRange={visibleRange}
             chartZoom={chartZoom}
             chartOffset={chartOffset}
+            timeElapsed={timeElapsed}
+            formatTime={formatTime}
             formatPrice={formatPrice}
             formatPnl={formatPnl}
             handleMouseDown={handleMouseDown}
@@ -1456,6 +1467,8 @@ const isGameOverRef = useRef(isGameOver); // Ref for reliable game over check in
             leverage={leverage}
             setLeverage={setLeverage} // Pass setter function
             heartRate={heartRate}
+            sanity={sanity}
+            character={selectedCharacter}
             getTraderEmoji={getTraderEmoji} // Pass function
             // Removed showMobileControls={showMobileControls}
           />

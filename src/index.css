@@ -1079,3 +1079,22 @@ input[type="range"].retro-slider::-moz-range-thumb:hover {
   animation: marquee-scroll 20s linear infinite; /* Adjust duration as needed */
   white-space: nowrap; /* Ensure content stays on one line */
 }
+
+/* Custom styles for Trader Profile with Gradient Border */
+.trader-profile-box {
+  position: relative;
+  background: #000; /* The content background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  z-index: 1;
+}
+
+.trader-profile-box-wrapper {
+  position: relative;
+  padding: 2px; /* Border thickness */
+  background: linear-gradient(135deg, var(--pixel-pink), var(--pixel-secondary));
+  box-shadow: 0 0 10px rgba(255, 51, 51, 0.4); /* Red glow */
+  height: 100%;
+}
